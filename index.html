@@ -1,0 +1,3460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ChoreQuest · Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Manrope:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --bg: #FFF8F0;
+    --bg-2: #FFEFD8;
+    --ink: #1A1410;
+    --ink-2: #5C4A3E;
+    --line: #E8D5B7;
+    --sunset: #FF6B47;
+    --honey: #FFB627;
+    --leaf: #7FB069;
+    --berry: #E94560;
+    --sky: #4F86C6;
+    --plum: #6B3F73;
+    --paper: #FFFDF8;
+  }
+  .dark {
+    --bg: #14110F;
+    --bg-2: #1F1A16;
+    --ink: #FFF1DD;
+    --ink-2: #C9B89E;
+    --line: #2E251D;
+    --paper: #1A1612;
+  }
+  html, body { font-family: 'Manrope', system-ui, sans-serif; background: var(--bg); color: var(--ink); }
+  .font-display { font-family: 'Bricolage Grotesque', serif; font-variation-settings: "wght" 700, "opsz" 96; letter-spacing: -0.02em; }
+  .font-mono { font-family: 'DM Mono', monospace; letter-spacing: -0.04em; }
+
+  /* Decorative grain */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='1'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.5;
+  }
+
+  /* Custom utility classes */
+  .chip { border-radius: 999px; padding: 4px 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+  .card-soft {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.6) inset,
+      0 2px 8px rgba(26,20,16,0.04),
+      0 16px 32px -16px rgba(26,20,16,0.08);
+  }
+  .btn-primary {
+    background: linear-gradient(180deg, #FF8866, #FF6B47 60%, #E94560);
+    color: #FFF8F0;
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset, 0 6px 18px -6px rgba(255,107,71,0.6), 0 2px 0 rgba(0,0,0,0.08);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset, 0 12px 24px -8px rgba(255,107,71,0.7), 0 2px 0 rgba(0,0,0,0.1); }
+  .btn-primary:active { transform: translateY(1px); }
+  .btn-ghost {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 2px 0 rgba(26,20,16,0.05);
+  }
+  .pill-sunset { background: linear-gradient(135deg, #FFE7DC, #FFD3C2); color: #8B2E14; }
+  .pill-honey  { background: linear-gradient(135deg, #FFF1D1, #FFE2A8); color: #7A4D00; }
+  .pill-leaf   { background: linear-gradient(135deg, #DEEFD0, #C2DFAB); color: #2E5A1B; }
+  .pill-berry  { background: linear-gradient(135deg, #FFD9E2, #FFB5C7); color: #8B1B33; }
+  .pill-sky    { background: linear-gradient(135deg, #D9E6F5, #B5CDE9); color: #1B3E66; }
+  .pill-plum   { background: linear-gradient(135deg, #E6D7EA, #C9ADD2); color: #401C49; }
+  .pill-ink    { background: var(--ink); color: var(--bg); }
+
+  /* Animated XP bar */
+  @keyframes fillxp { from { width: 0; } to { width: var(--w, 60%); } }
+  .xp-fill { animation: fillxp 1.4s cubic-bezier(.4,1.4,.4,1) both; }
+
+  /* Flame */
+  @keyframes flicker {
+    0%, 100% { transform: scaleY(1) translateY(0); filter: brightness(1); }
+    50%      { transform: scaleY(1.08) translateY(-2px); filter: brightness(1.15); }
+  }
+  .flame { display: inline-flex; align-items: end; gap: 2px; }
+  .flame svg { animation: flicker 1.2s ease-in-out infinite; transform-origin: bottom; }
+
+  /* Staggered reveal */
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .rise { animation: rise .7s cubic-bezier(.2,.8,.2,1) both; }
+  .d1 { animation-delay: .05s } .d2 { animation-delay: .12s } .d3 { animation-delay: .2s } .d4 { animation-delay: .28s } .d5 { animation-delay: .36s } .d6 { animation-delay: .44s }
+
+  /* Confetti */
+  @keyframes burst { 0% { transform: scale(.3) rotate(0); opacity: 0; } 30% { opacity: 1; } 100% { transform: scale(1) rotate(180deg); opacity: 0; } }
+
+  /* Tab nav */
+  .nav-tab { position: relative; }
+  .nav-tab.active::after {
+    content: ''; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 3px;
+    background: linear-gradient(90deg, var(--sunset), var(--berry));
+    border-radius: 3px 3px 0 0;
+  }
+
+  /* Decorative ribbon */
+  .ribbon-bg {
+    background:
+      radial-gradient(60% 60% at 80% 0%, rgba(255,182,39,0.18), transparent 70%),
+      radial-gradient(50% 50% at 0% 100%, rgba(255,107,71,0.16), transparent 70%),
+      radial-gradient(40% 40% at 100% 100%, rgba(127,176,105,0.15), transparent 70%);
+  }
+
+  /* Chunky checkbox */
+  .check {
+    width: 22px; height: 22px; border-radius: 8px;
+    border: 2px solid var(--ink-2); background: var(--paper);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all .2s;
+  }
+  .check.on { background: linear-gradient(135deg, #7FB069, #5C8C44); border-color: #5C8C44; }
+  .check.on::after { content: '✓'; color: #FFF; font-weight: 800; font-size: 14px; }
+
+  /* Bumpy avatar */
+  .avatar {
+    width: 40px; height: 40px;
+    border-radius: 14px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; color: white;
+    border: 2px solid var(--paper);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.1), 0 6px 14px -6px rgba(0,0,0,0.2);
+  }
+
+  /* Screen container */
+  .screen { display: none; padding: 32px 24px 80px; max-width: 1280px; margin: 0 auto; position: relative; z-index: 1; }
+  .screen.active { display: block; }
+
+  /* Diagonal accent line */
+  .accent-line { background: linear-gradient(90deg, transparent, var(--sunset), var(--honey), var(--leaf), transparent); height: 2px; opacity: 0.4; }
+
+  /* Section labels */
+  .eyebrow { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; color: var(--ink-2); }
+
+  /* Hover lift */
+  .lift { transition: transform .2s ease, box-shadow .2s ease; }
+  .lift:hover { transform: translateY(-3px); }
+
+  /* Sparkle */
+  .sparkle { display: inline-block; animation: spin 4s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Mobile frame */
+  .phone {
+    width: 320px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 36px;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 30px 60px -20px rgba(26,20,16,0.18);
+    overflow: hidden;
+  }
+</style>
+</head>
+<body class="antialiased">
+
+<!-- ====== HEADER NAV ====== -->
+<header class="relative z-10 border-b" style="border-color: var(--line); background: rgba(255,248,240,0.8); backdrop-filter: blur(12px);">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
+    <a href="#" class="flex items-center gap-3" onclick="show('intro');return false;">
+      <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl"
+           style="background: linear-gradient(135deg, #FF6B47, #E94560); color: white; box-shadow: 0 2px 0 rgba(0,0,0,0.1), 0 8px 20px -8px rgba(233,69,96,0.6);">
+        🏠
+      </div>
+      <div>
+        <div class="font-display text-xl" style="line-height:1;">ChoreQuest</div>
+        <div class="text-[10px] tracking-widest uppercase" style="color: var(--ink-2);">Design System v1</div>
+      </div>
+    </a>
+    <nav class="hidden md:flex items-center gap-1 text-sm overflow-x-auto" id="tabs">
+      <a class="nav-tab px-3 py-2 rounded-lg active" data-screen="intro" href="#">Visão</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="ds" href="#">Sistema</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="login" href="#">Login</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="register" href="#">Registro</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="dashboard" href="#">Dashboard</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="tasks" href="#">Tasks</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="create" href="#">Criar</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="approval" href="#">Aprovar</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="rewards" href="#">Rewards</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="ranking" href="#">Ranking</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="family" href="#">Família</a>
+      <span class="text-[var(--ink-2)] mx-1">·</span>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="onboarding" href="#">Onboarding</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="parent-dash" href="#">Parent</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="levelup" href="#">Level Up</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="notifications" href="#">Notif</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="settings" href="#">Settings</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="states" href="#">Estados</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="mobile" href="#">📱 Mobile</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="flows" href="#">Fluxos</a>
+      <span class="text-[var(--ink-2)] mx-1">·</span>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="task-detail" href="#">Task Detail</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="badges" href="#">Badges</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="xp-history" href="#">XP Hist</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="invite-accept" href="#">Invite</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="forgot" href="#">Forgot pw</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="verify" href="#">Verify</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="profile-public" href="#">Profile</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="reward-post" href="#">Post-redeem</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="weekly-report" href="#">Report</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="family-empty" href="#">Family∅</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="streak-risk" href="#">Streak⚠️</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="confirm-destroy" href="#">Confirm</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="not-found" href="#">404</a>
+      <a class="nav-tab px-3 py-2 rounded-lg" data-screen="maintenance" href="#">Maint</a>
+    </nav>
+    <button onclick="document.documentElement.classList.toggle('dark')" class="btn-ghost rounded-xl px-3 py-2 text-sm" style="border-radius: 12px;">🌗</button>
+  </div>
+</header>
+
+<!-- ============================================== -->
+<!-- SCREEN: INTRO / OVERVIEW                        -->
+<!-- ============================================== -->
+<section id="intro" class="screen active">
+  <div class="ribbon-bg rounded-[32px] p-10 md:p-16 border" style="border-color: var(--line);">
+    <div class="eyebrow rise">Plataforma gamificada</div>
+    <h1 class="font-display text-5xl md:text-7xl mt-3 rise d1" style="line-height: 0.95;">
+      Tarefas domésticas<br/>
+      <span style="background: linear-gradient(120deg, var(--sunset), var(--berry) 50%, var(--plum)); -webkit-background-clip: text; background-clip: text; color: transparent;">viram aventura.</span>
+    </h1>
+    <p class="mt-5 max-w-2xl text-lg rise d2" style="color: var(--ink-2);">
+      ChoreQuest transforma a rotina da família em XP, níveis, streaks e recompensas reais. Para crianças que adoram jogar e pais que querem responsabilidade compartilhada.
+    </p>
+    <div class="flex flex-wrap gap-3 mt-7 rise d3">
+      <button class="btn-primary rounded-2xl px-6 py-3 font-semibold" onclick="show('dashboard')">Ver Dashboard ↗</button>
+      <button class="btn-ghost rounded-2xl px-6 py-3 font-semibold" onclick="show('ds')">Sistema visual</button>
+    </div>
+  </div>
+
+  <!-- Telas em grid -->
+  <div class="mt-14">
+    <div class="eyebrow">Telas disponíveis</div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+      <ScreenCard k="login" t="Login" e="🔑" b="pill-sunset"></ScreenCard>
+      <ScreenCard k="register" t="Registro família" e="🌱" b="pill-leaf"></ScreenCard>
+      <ScreenCard k="dashboard" t="Dashboard (child)" e="🎯" b="pill-honey"></ScreenCard>
+      <ScreenCard k="tasks" t="Tasks list" e="📋" b="pill-sky"></ScreenCard>
+      <ScreenCard k="create" t="Criar task" e="✍️" b="pill-plum"></ScreenCard>
+      <ScreenCard k="approval" t="Approval Queue" e="⚖️" b="pill-berry"></ScreenCard>
+      <ScreenCard k="rewards" t="Rewards Shop" e="🎁" b="pill-honey"></ScreenCard>
+      <ScreenCard k="ranking" t="Leaderboard" e="🏆" b="pill-sunset"></ScreenCard>
+      <ScreenCard k="family" t="Família" e="👨‍👩‍👧" b="pill-leaf"></ScreenCard>
+      <ScreenCard k="ds" t="Sistema" e="🎨" b="pill-ink"></ScreenCard>
+      <ScreenCard k="onboarding" t="Onboarding" e="✨" b="pill-sky"></ScreenCard>
+      <ScreenCard k="parent-dash" t="Parent dashboard" e="👨‍💼" b="pill-plum"></ScreenCard>
+      <ScreenCard k="levelup" t="Level Up 🎉" e="⭐" b="pill-sunset"></ScreenCard>
+      <ScreenCard k="notifications" t="Notificações" e="🔔" b="pill-honey"></ScreenCard>
+      <ScreenCard k="settings" t="Settings" e="⚙️" b="pill-ink"></ScreenCard>
+      <ScreenCard k="states" t="Estados (empty/loading/error)" e="🪫" b="pill-berry"></ScreenCard>
+      <ScreenCard k="mobile" t="Mobile mockups" e="📱" b="pill-leaf"></ScreenCard>
+      <ScreenCard k="flows" t="User flows" e="🗺️" b="pill-sky"></ScreenCard>
+      <ScreenCard k="task-detail" t="Task Detail" e="🔍" b="pill-sky"></ScreenCard>
+      <ScreenCard k="badges" t="Badge Gallery" e="🏆" b="pill-honey"></ScreenCard>
+      <ScreenCard k="xp-history" t="XP History" e="📈" b="pill-sunset"></ScreenCard>
+      <ScreenCard k="invite-accept" t="Invite recebido" e="💌" b="pill-leaf"></ScreenCard>
+      <ScreenCard k="forgot" t="Forgot password" e="🔑" b="pill-berry"></ScreenCard>
+      <ScreenCard k="verify" t="Email verification" e="✉️" b="pill-plum"></ScreenCard>
+      <ScreenCard k="profile-public" t="Profile público" e="👤" b="pill-sky"></ScreenCard>
+      <ScreenCard k="reward-post" t="Pós-resgate" e="📦" b="pill-honey"></ScreenCard>
+      <ScreenCard k="weekly-report" t="Weekly report" e="📄" b="pill-ink"></ScreenCard>
+      <ScreenCard k="family-empty" t="Família vazia" e="🌱" b="pill-leaf"></ScreenCard>
+      <ScreenCard k="streak-risk" t="Streak em risco" e="⚠️" b="pill-berry"></ScreenCard>
+      <ScreenCard k="confirm-destroy" t="Confirm destrutiva" e="🛑" b="pill-berry"></ScreenCard>
+      <ScreenCard k="not-found" t="404" e="🧭" b="pill-ink"></ScreenCard>
+      <ScreenCard k="maintenance" t="Manutenção" e="🛠️" b="pill-honey"></ScreenCard>
+    </div>
+  </div>
+
+  <!-- Quick stats -->
+  <div class="mt-14 grid md:grid-cols-4 gap-4">
+    <div class="card-soft p-5">
+      <div class="font-display text-4xl">33</div>
+      <div class="eyebrow mt-1">Telas</div>
+    </div>
+    <div class="card-soft p-5">
+      <div class="font-display text-4xl">12+</div>
+      <div class="eyebrow mt-1">Componentes</div>
+    </div>
+    <div class="card-soft p-5">
+      <div class="font-display text-4xl">7</div>
+      <div class="eyebrow mt-1">Cores principais</div>
+    </div>
+    <div class="card-soft p-5">
+      <div class="font-display text-4xl">3</div>
+      <div class="eyebrow mt-1">Famílias tipográficas</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: DESIGN SYSTEM                           -->
+<!-- ============================================== -->
+<section id="ds" class="screen">
+  <div class="eyebrow rise">Cozy Quest · Design System</div>
+  <h2 class="font-display text-4xl md:text-5xl mt-2 rise d1">Linguagem visual</h2>
+
+  <!-- COLORS -->
+  <div class="mt-10">
+    <div class="eyebrow">Paleta</div>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mt-3">
+      <div class="card-soft p-4 lift">
+        <div class="h-16 rounded-xl mb-3" style="background: #FF6B47;"></div>
+        <div class="font-mono text-sm">Sunset</div>
+        <div class="font-mono text-xs" style="color: var(--ink-2);">#FF6B47</div>
+      </div>
+      <div class="card-soft p-4 lift">
+        <div class="h-16 rounded-xl mb-3" style="background: #FFB627;"></div>
+        <div class="font-mono text-sm">Honey</div>
+        <div class="font-mono text-xs" style="color: var(--ink-2);">#FFB627</div>
+      </div>
+      <div class="card-soft p-4 lift">
+        <div class="h-16 rounded-xl mb-3" style="background: #7FB069;"></div>
+        <div class="font-mono text-sm">Leaf</div>
+        <div class="font-mono text-xs" style="color: var(--ink-2);">#7FB069</div>
+      </div>
+      <div class="card-soft p-4 lift">
+        <div class="h-16 rounded-xl mb-3" style="background: #E94560;"></div>
+        <div class="font-mono text-sm">Berry</div>
+        <div class="font-mono text-xs" style="color: var(--ink-2);">#E94560</div>
+      </div>
+      <div class="card-soft p-4 lift">
+        <div class="h-16 rounded-xl mb-3" style="background: #4F86C6;"></div>
+        <div class="font-mono text-sm">Sky</div>
+        <div class="font-mono text-xs" style="color: var(--ink-2);">#4F86C6</div>
+      </div>
+      <div class="card-soft p-4 lift">
+        <div class="h-16 rounded-xl mb-3" style="background: #6B3F73;"></div>
+        <div class="font-mono text-sm">Plum</div>
+        <div class="font-mono text-xs" style="color: var(--ink-2);">#6B3F73</div>
+      </div>
+      <div class="card-soft p-4 lift">
+        <div class="h-16 rounded-xl mb-3" style="background: #1A1410;"></div>
+        <div class="font-mono text-sm">Ink</div>
+        <div class="font-mono text-xs" style="color: var(--ink-2);">#1A1410</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TYPE -->
+  <div class="mt-10">
+    <div class="eyebrow">Tipografia</div>
+    <div class="grid md:grid-cols-3 gap-4 mt-3">
+      <div class="card-soft p-6">
+        <div class="font-display text-5xl">Bricolage</div>
+        <div class="text-sm mt-3" style="color: var(--ink-2);">Display · 28-96px · Headings, hero numbers</div>
+      </div>
+      <div class="card-soft p-6">
+        <div class="text-3xl font-semibold" style="font-family: Manrope;">Manrope</div>
+        <div class="text-base mt-3" style="color: var(--ink-2);">Body · 14-18px · Conteúdo geral, formulários, descrições.</div>
+      </div>
+      <div class="card-soft p-6">
+        <div class="font-mono text-3xl">DM Mono 320</div>
+        <div class="font-mono text-sm mt-3" style="color: var(--ink-2);">Numbers/XP/Codes · 12-32px</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPONENTS -->
+  <div class="mt-10">
+    <div class="eyebrow">Componentes-chave</div>
+    <div class="grid md:grid-cols-2 gap-4 mt-3">
+
+      <!-- XP Progress Bar -->
+      <div class="card-soft p-6">
+        <div class="flex items-baseline justify-between">
+          <div class="font-display text-2xl">XP Progress</div>
+          <div class="font-mono text-sm" style="color: var(--ink-2);">L3 · 320 / 900 XP</div>
+        </div>
+        <div class="mt-4 h-4 rounded-full overflow-hidden" style="background: var(--bg-2); border: 1px solid var(--line);">
+          <div class="h-full xp-fill" style="--w: 36%; background: linear-gradient(90deg, #FFB627, #FF6B47, #E94560);"></div>
+        </div>
+        <div class="flex items-center gap-2 mt-3 text-xs font-mono" style="color: var(--ink-2);">
+          <span>580 XP até L4</span>
+          <span>•</span>
+          <span class="pill-honey chip">Multiplier ×1.5</span>
+        </div>
+      </div>
+
+      <!-- Streak Flame Evolution -->
+      <div class="card-soft p-6">
+        <div class="font-display text-2xl">Streak Flame</div>
+        <div class="text-xs mt-1" style="color: var(--ink-2);">A chama evolui conforme o streak cresce</div>
+        <div class="flex items-end gap-6 mt-5">
+          <div class="text-center">
+            <div class="flame"><svg width="34" height="44" viewBox="0 0 34 44"><path d="M17 4 C8 14, 6 24, 6 30 a11 11 0 0 0 22 0 c0-6-3-11-11-26z" fill="#A8A29E"/></svg></div>
+            <div class="text-[10px] font-mono mt-1" style="color: var(--ink-2);">0d</div>
+          </div>
+          <div class="text-center">
+            <div class="flame"><svg width="34" height="44" viewBox="0 0 34 44"><path d="M17 4 C8 14, 6 24, 6 30 a11 11 0 0 0 22 0 c0-6-3-11-11-26z" fill="#FFD24D"/><path d="M17 16 C12 22, 11 28, 11 31 a6 6 0 0 0 12 0 c0-4-2-7-6-15z" fill="#FFEAA0"/></svg></div>
+            <div class="text-[10px] font-mono mt-1" style="color: var(--ink-2);">1-6d</div>
+          </div>
+          <div class="text-center">
+            <div class="flame"><svg width="40" height="50" viewBox="0 0 34 44"><path d="M17 4 C8 14, 6 24, 6 30 a11 11 0 0 0 22 0 c0-6-3-11-11-26z" fill="#FF6B47"/><path d="M17 16 C12 22, 11 28, 11 31 a6 6 0 0 0 12 0 c0-4-2-7-6-15z" fill="#FFB627"/></svg></div>
+            <div class="text-[10px] font-mono mt-1" style="color: var(--ink-2);">7-29d</div>
+          </div>
+          <div class="text-center">
+            <div class="flame"><svg width="44" height="56" viewBox="0 0 34 44"><path d="M17 4 C8 14, 6 24, 6 30 a11 11 0 0 0 22 0 c0-6-3-11-11-26z" fill="#4F86C6"/><path d="M17 14 C12 20, 11 28, 11 31 a6 6 0 0 0 12 0 c0-4-2-7-6-17z" fill="#A8D1F2"/><circle cx="17" cy="28" r="3" fill="#fff"/></svg></div>
+            <div class="text-[10px] font-mono mt-1" style="color: var(--ink-2);">30d+ 🔥</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Badges -->
+      <div class="card-soft p-6">
+        <div class="font-display text-2xl">Badges</div>
+        <div class="text-xs mt-1" style="color: var(--ink-2);">Achievements desbloqueáveis</div>
+        <div class="flex flex-wrap gap-3 mt-4">
+          <BadgeChip label="First PR" emoji="🚀" tone="pill-sunset"></BadgeChip>
+          <BadgeChip label="Streak 7" emoji="🔥" tone="pill-honey"></BadgeChip>
+          <BadgeChip label="Level 5" emoji="⭐" tone="pill-leaf"></BadgeChip>
+          <BadgeChip label="1000 XP" emoji="💎" tone="pill-berry"></BadgeChip>
+          <BadgeChip label="Helper" emoji="🤝" tone="pill-sky"></BadgeChip>
+          <span class="chip" style="border:2px dashed var(--line); color: var(--ink-2); background: transparent;">+ 8 lock</span>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="card-soft p-6">
+        <div class="font-display text-2xl">Botões</div>
+        <div class="flex flex-wrap gap-3 mt-4">
+          <button class="btn-primary rounded-2xl px-5 py-2.5 font-semibold">Aceitar tarefa</button>
+          <button class="btn-ghost rounded-2xl px-5 py-2.5 font-semibold">Cancelar</button>
+          <button class="rounded-2xl px-5 py-2.5 font-semibold" style="background: var(--ink); color: var(--bg);">Aprovar ⚡</button>
+          <button class="rounded-2xl px-5 py-2.5 font-semibold" style="background: transparent; color: var(--berry); border: 2px solid var(--berry);">Rejeitar</button>
+        </div>
+      </div>
+
+      <!-- Status Pills -->
+      <div class="card-soft p-6 md:col-span-2">
+        <div class="font-display text-2xl">Status pills</div>
+        <div class="flex flex-wrap gap-2 mt-4">
+          <span class="chip pill-ink">📚 Backlog</span>
+          <span class="chip pill-sky">🎯 Sprint Backlog</span>
+          <span class="chip pill-plum">📝 To Do</span>
+          <span class="chip pill-honey">🔨 In Progress</span>
+          <span class="chip pill-berry">👀 Code Review</span>
+          <span class="chip pill-sunset">🧪 QA</span>
+          <span class="chip pill-leaf">✅ Done</span>
+          <span class="chip" style="background: #FFE3E3; color: #8B1B1B;">🚫 Blocked</span>
+        </div>
+        <div class="accent-line mt-6"></div>
+        <div class="eyebrow mt-6">Dificuldade</div>
+        <div class="flex flex-wrap gap-2 mt-2">
+          <span class="chip pill-leaf">🟢 Easy</span>
+          <span class="chip pill-honey">🟡 Medium</span>
+          <span class="chip" style="background: #FFD9DD; color: #6B0F1A;">🔴 Hard</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SPACING + RADII -->
+  <div class="mt-10 grid md:grid-cols-2 gap-4">
+    <div class="card-soft p-6">
+      <div class="font-display text-2xl">Espaçamento</div>
+      <div class="font-mono text-sm mt-3" style="color: var(--ink-2);">
+        4 · 8 · 12 · 16 · 20 · 24 · 32 · 48 · 64 · 96 px<br/>
+        Tailwind: 1, 2, 3, 4, 5, 6, 8, 12, 16, 24
+      </div>
+    </div>
+    <div class="card-soft p-6">
+      <div class="font-display text-2xl">Border radius</div>
+      <div class="flex items-center gap-2 mt-4">
+        <div class="w-12 h-12" style="background: var(--honey); border-radius: 8px;"></div>
+        <div class="w-12 h-12" style="background: var(--leaf); border-radius: 14px;"></div>
+        <div class="w-12 h-12" style="background: var(--sunset); border-radius: 22px;"></div>
+        <div class="w-12 h-12" style="background: var(--plum); border-radius: 32px;"></div>
+        <div class="w-12 h-12 rounded-full" style="background: var(--berry);"></div>
+      </div>
+      <div class="font-mono text-xs mt-3" style="color: var(--ink-2);">8 · 14 · 22 · 32 · 9999</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: LOGIN                                   -->
+<!-- ============================================== -->
+<section id="login" class="screen">
+  <div class="grid md:grid-cols-2 gap-10 items-center min-h-[80vh]">
+    <div>
+      <div class="eyebrow rise">Bem-vindo de volta</div>
+      <h2 class="font-display text-5xl md:text-6xl mt-2 rise d1" style="line-height:0.95;">
+        Continue<br/>sua quest.
+      </h2>
+      <p class="mt-4 max-w-md rise d2" style="color: var(--ink-2);">
+        Entre pra ver suas tarefas, resgatar recompensas e proteger seu streak diário.
+      </p>
+      <form class="card-soft p-8 mt-8 max-w-md rise d3">
+        <label class="eyebrow">E-mail</label>
+        <input type="email" placeholder="voce@familia.com" class="w-full mt-2 px-4 py-3 rounded-2xl bg-transparent" style="border: 2px solid var(--line);"/>
+        <div class="flex items-center justify-between mt-5">
+          <label class="eyebrow">Senha</label>
+          <a class="text-xs font-semibold" style="color: var(--sunset);">esqueci</a>
+        </div>
+        <input type="password" placeholder="••••••••" class="w-full mt-2 px-4 py-3 rounded-2xl bg-transparent font-mono tracking-widest" style="border: 2px solid var(--line);"/>
+        <button class="btn-primary rounded-2xl w-full mt-6 py-3.5 font-semibold text-lg">Entrar →</button>
+        <div class="text-center mt-5 text-sm" style="color: var(--ink-2);">
+          Primeira vez? <a class="font-semibold" style="color: var(--berry); cursor:pointer;" onclick="show('register')">Criar família</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Decorative side card -->
+    <div class="hidden md:block relative">
+      <div class="card-soft p-8 transform rotate-2 ribbon-bg">
+        <div class="flex items-center gap-3">
+          <div class="avatar" style="background: linear-gradient(135deg, #FF6B47, #E94560);">M</div>
+          <div>
+            <div class="font-display text-xl">Manu</div>
+            <div class="text-xs font-mono" style="color: var(--ink-2);">Level 7 · 1.240 XP</div>
+          </div>
+          <div class="ml-auto flame"><svg width="28" height="36" viewBox="0 0 34 44"><path d="M17 4 C8 14, 6 24, 6 30 a11 11 0 0 0 22 0 c0-6-3-11-11-26z" fill="#FF6B47"/><path d="M17 16 C12 22, 11 28, 11 31 a6 6 0 0 0 12 0 c0-4-2-7-6-15z" fill="#FFB627"/></svg></div>
+        </div>
+        <div class="mt-5 h-3 rounded-full" style="background: var(--bg-2);">
+          <div class="h-full rounded-full xp-fill" style="--w: 62%; background: linear-gradient(90deg, #FFB627, #FF6B47);"></div>
+        </div>
+        <div class="grid grid-cols-3 gap-3 mt-6">
+          <div class="card-soft p-3 text-center">
+            <div class="font-display text-2xl">14</div>
+            <div class="text-[10px] uppercase tracking-widest" style="color: var(--ink-2);">Streak</div>
+          </div>
+          <div class="card-soft p-3 text-center">
+            <div class="font-display text-2xl">3</div>
+            <div class="text-[10px] uppercase tracking-widest" style="color: var(--ink-2);">Hoje</div>
+          </div>
+          <div class="card-soft p-3 text-center">
+            <div class="font-display text-2xl">5</div>
+            <div class="text-[10px] uppercase tracking-widest" style="color: var(--ink-2);">Badges</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-soft p-5 absolute -bottom-6 -left-6 max-w-xs transform -rotate-3">
+        <div class="flex items-center gap-2">
+          <span class="chip pill-leaf">✅ Aprovado</span>
+        </div>
+        <div class="mt-2 font-display text-lg">"Lavar a louça do jantar"</div>
+        <div class="font-mono text-xs mt-1" style="color: var(--ink-2);">+45 XP · há 2h</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: REGISTER                                -->
+<!-- ============================================== -->
+<section id="register" class="screen">
+  <div class="max-w-2xl mx-auto">
+    <div class="eyebrow rise">Criar família</div>
+    <h2 class="font-display text-5xl mt-2 rise d1" style="line-height:0.95;">Começar uma quest<br/>juntos.</h2>
+    <p class="mt-4 rise d2" style="color: var(--ink-2);">Você será o(a) parent. Depois adiciona crianças/adolescentes via convite.</p>
+
+    <div class="grid grid-cols-3 gap-2 mt-8 rise d3">
+      <div class="card-soft p-3 text-center">
+        <div class="w-8 h-8 rounded-full mx-auto flex items-center justify-center text-sm font-bold" style="background: var(--sunset); color: white;">1</div>
+        <div class="text-xs mt-2 font-semibold">Conta parent</div>
+      </div>
+      <div class="card-soft p-3 text-center" style="opacity:0.5;">
+        <div class="w-8 h-8 rounded-full mx-auto flex items-center justify-center text-sm font-bold" style="background: var(--line); color: var(--ink-2);">2</div>
+        <div class="text-xs mt-2 font-semibold">Nome da família</div>
+      </div>
+      <div class="card-soft p-3 text-center" style="opacity:0.5;">
+        <div class="w-8 h-8 rounded-full mx-auto flex items-center justify-center text-sm font-bold" style="background: var(--line); color: var(--ink-2);">3</div>
+        <div class="text-xs mt-2 font-semibold">Convidar</div>
+      </div>
+    </div>
+
+    <form class="card-soft p-8 mt-6 rise d4">
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="eyebrow">Seu nome</label>
+          <input class="w-full mt-2 px-4 py-3 rounded-2xl bg-transparent" style="border: 2px solid var(--line);" placeholder="Maria"/>
+        </div>
+        <div>
+          <label class="eyebrow">E-mail</label>
+          <input class="w-full mt-2 px-4 py-3 rounded-2xl bg-transparent" style="border: 2px solid var(--line);" placeholder="maria@familia.com"/>
+        </div>
+      </div>
+      <div class="mt-4">
+        <label class="eyebrow">Senha (8+ chars)</label>
+        <input type="password" class="w-full mt-2 px-4 py-3 rounded-2xl bg-transparent font-mono tracking-widest" style="border: 2px solid var(--line);" placeholder="••••••••"/>
+      </div>
+      <div class="mt-4">
+        <label class="eyebrow">Nome da família</label>
+        <input class="w-full mt-2 px-4 py-3 rounded-2xl bg-transparent" style="border: 2px solid var(--line);" placeholder="Os Silva"/>
+      </div>
+      <div class="flex items-center gap-2 mt-5 text-xs" style="color: var(--ink-2);">
+        <span class="check on"></span>
+        Concordo com os termos e privacidade
+      </div>
+      <button class="btn-primary rounded-2xl w-full mt-6 py-3.5 font-semibold text-lg">Criar família →</button>
+    </form>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: DASHBOARD                               -->
+<!-- ============================================== -->
+<section id="dashboard" class="screen">
+  <!-- Top hero -->
+  <div class="grid lg:grid-cols-3 gap-4">
+    <div class="lg:col-span-2 card-soft p-6 md:p-8 ribbon-bg rise">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="eyebrow">Boa tarde, Manu 👋</div>
+          <h2 class="font-display text-4xl md:text-5xl mt-1" style="line-height:0.95;">
+            Sua família é <span style="background: linear-gradient(120deg, var(--sunset), var(--berry)); -webkit-background-clip:text; color: transparent;">campeã esta semana.</span>
+          </h2>
+        </div>
+        <div class="hidden md:block">
+          <div class="avatar w-14 h-14 text-lg" style="background: linear-gradient(135deg, #FF6B47, #E94560); border-radius: 18px;">M</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4 mt-7">
+        <!-- XP card -->
+        <div class="card-soft p-5">
+          <div class="eyebrow">Seu XP</div>
+          <div class="font-display text-3xl mt-1">L7</div>
+          <div class="font-mono text-xs mt-1" style="color: var(--ink-2);">1.240 / 2.000</div>
+          <div class="mt-3 h-2 rounded-full" style="background: var(--bg-2);">
+            <div class="h-full rounded-full xp-fill" style="--w: 62%; background: linear-gradient(90deg, #FFB627, #FF6B47);"></div>
+          </div>
+        </div>
+        <!-- Streak -->
+        <div class="card-soft p-5 flex items-center gap-3">
+          <div class="flame">
+            <svg width="40" height="50" viewBox="0 0 34 44"><path d="M17 4 C8 14, 6 24, 6 30 a11 11 0 0 0 22 0 c0-6-3-11-11-26z" fill="#FF6B47"/><path d="M17 16 C12 22, 11 28, 11 31 a6 6 0 0 0 12 0 c0-4-2-7-6-15z" fill="#FFB627"/></svg>
+          </div>
+          <div>
+            <div class="font-display text-3xl">14d</div>
+            <div class="text-xs" style="color: var(--ink-2);">streak atual</div>
+            <div class="text-[10px] font-mono mt-0.5" style="color: var(--leaf);">+50 XP em 6d 🎁</div>
+          </div>
+        </div>
+        <!-- Pending -->
+        <div class="card-soft p-5">
+          <div class="eyebrow">Tarefas hoje</div>
+          <div class="font-display text-3xl mt-1">3</div>
+          <div class="flex items-center gap-1 mt-2">
+            <span class="chip pill-honey">2 em aberto</span>
+            <span class="chip pill-sky">1 aguardando</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side panel: next reward -->
+    <div class="card-soft p-6 rise d1">
+      <div class="eyebrow">Próxima recompensa</div>
+      <div class="font-display text-2xl mt-1">Pizza sexta 🍕</div>
+      <div class="font-mono text-xs mt-1" style="color: var(--ink-2);">500 XP · você tem 1.240</div>
+      <div class="mt-4 h-3 rounded-full" style="background: var(--bg-2);">
+        <div class="h-full rounded-full" style="width:100%; background: linear-gradient(90deg, var(--leaf), #5C8C44);"></div>
+      </div>
+      <button class="btn-primary rounded-2xl w-full mt-5 py-3 font-semibold">Resgatar agora ✨</button>
+      <div class="text-center mt-4 text-xs" style="color: var(--ink-2);">+ 12 recompensas no catálogo</div>
+    </div>
+  </div>
+
+  <!-- Tasks pendentes -->
+  <div class="mt-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <div class="eyebrow">Suas tarefas</div>
+        <h3 class="font-display text-2xl">Pendentes hoje</h3>
+      </div>
+      <button class="btn-ghost rounded-xl px-4 py-2 text-sm font-semibold" onclick="show('tasks')">Ver todas →</button>
+    </div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
+      <TaskCard title="Lavar a louça do jantar" cat="Cozinha" points="45" diff="Easy" status="🎯 To Do" tone="leaf" who="Manu" emoji="🍽️"></TaskCard>
+      <TaskCard title="Arrumar quarto" cat="Quarto" points="60" diff="Medium" status="🎯 To Do" tone="honey" who="Manu" emoji="🛏️"></TaskCard>
+      <TaskCard title="Estudar matemática 30min" cat="Estudo" points="80" diff="Hard" status="🔨 In Progress" tone="sunset" who="Manu" emoji="📚"></TaskCard>
+    </div>
+  </div>
+
+  <!-- Recent activity -->
+  <div class="mt-10 grid md:grid-cols-2 gap-6">
+    <div>
+      <div class="eyebrow">Atividade</div>
+      <h3 class="font-display text-2xl">Últimas conquistas</h3>
+      <div class="mt-4 space-y-2">
+        <ActivityRow tone="leaf" emoji="✅" title="Aprovada: 'Tirar lixo'" sub="+30 XP · 1h atrás"></ActivityRow>
+        <ActivityRow tone="honey" emoji="🔥" title="Streak 14 dias!" sub="Bônus em 6d · há 8h"></ActivityRow>
+        <ActivityRow tone="berry" emoji="⭐" title="Level Up: L6 → L7" sub="ontem"></ActivityRow>
+        <ActivityRow tone="sky" emoji="🎁" title="Badge: Streak 7" sub="3 dias atrás"></ActivityRow>
+      </div>
+    </div>
+
+    <div>
+      <div class="eyebrow">Ranking família</div>
+      <h3 class="font-display text-2xl">Top 5 esta semana</h3>
+      <div class="card-soft mt-4 p-4">
+        <RankRow rank="1" name="Manu" lvl="L7" xp="1.240" you="true" color="sunset"></RankRow>
+        <RankRow rank="2" name="Pedro" lvl="L6" xp="980" color="honey"></RankRow>
+        <RankRow rank="3" name="Bia" lvl="L5" xp="820" color="leaf"></RankRow>
+        <RankRow rank="4" name="Mãe" lvl="L4" xp="640" color="sky"></RankRow>
+        <RankRow rank="5" name="Pai" lvl="L3" xp="420" color="plum"></RankRow>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: TASKS LIST                              -->
+<!-- ============================================== -->
+<section id="tasks" class="screen">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <div class="eyebrow rise">Quests da família</div>
+      <h2 class="font-display text-4xl mt-1 rise d1">Todas as tarefas</h2>
+    </div>
+    <div class="flex items-center gap-2 rise d2">
+      <button class="btn-ghost rounded-xl px-4 py-2 text-sm font-semibold">Filtros ⌄</button>
+      <button class="btn-primary rounded-xl px-4 py-2 text-sm font-semibold" onclick="show('create')">+ Nova task</button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex flex-wrap items-center gap-2 mt-6 rise d3">
+    <span class="chip pill-ink">Tudo · 12</span>
+    <span class="chip" style="background: var(--paper); border:1px solid var(--line);">📚 Backlog · 4</span>
+    <span class="chip" style="background: var(--paper); border:1px solid var(--line);">🎯 To Do · 3</span>
+    <span class="chip" style="background: var(--paper); border:1px solid var(--line);">🔨 In Progress · 2</span>
+    <span class="chip" style="background: var(--paper); border:1px solid var(--line);">👀 Review · 2</span>
+    <span class="chip" style="background: var(--paper); border:1px solid var(--line);">✅ Done · 1</span>
+    <div class="ml-auto"></div>
+    <input placeholder="🔍 buscar…" class="px-3 py-1.5 rounded-xl bg-transparent text-sm" style="border:1px solid var(--line);"/>
+  </div>
+
+  <!-- Task groups -->
+  <div class="mt-8">
+    <div class="eyebrow">🔨 In Progress · 2</div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+      <TaskCard title="Estudar matemática 30min" cat="Estudo" points="80" diff="Hard" status="🔨 In Progress" tone="sunset" who="Manu" emoji="📚"></TaskCard>
+      <TaskCard title="Passar aspirador na sala" cat="Limpeza" points="50" diff="Medium" status="🔨 In Progress" tone="honey" who="Pedro" emoji="🧹"></TaskCard>
+    </div>
+  </div>
+
+  <div class="mt-8">
+    <div class="eyebrow">🎯 To Do · 3</div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+      <TaskCard title="Lavar a louça do jantar" cat="Cozinha" points="45" diff="Easy" status="🎯 To Do" tone="leaf" who="Manu" emoji="🍽️"></TaskCard>
+      <TaskCard title="Arrumar quarto" cat="Quarto" points="60" diff="Medium" status="🎯 To Do" tone="honey" who="Manu" emoji="🛏️"></TaskCard>
+      <TaskCard title="Regar plantas" cat="Plantas" points="20" diff="Easy" status="🎯 To Do" tone="leaf" who="Bia" emoji="🪴"></TaskCard>
+    </div>
+  </div>
+
+  <div class="mt-8">
+    <div class="eyebrow">👀 Aguardando aprovação · 4</div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+      <TaskCard title="Tirar lixo da semana" cat="Limpeza" points="30" diff="Easy" status="👀 Review" tone="berry" who="Manu" emoji="🗑️"></TaskCard>
+      <TaskCard title="Organizar armário" cat="Quarto" points="70" diff="Medium" status="👀 Review" tone="berry" who="Pedro" emoji="🧦"></TaskCard>
+      <TaskCard title="Estudar inglês 30min" cat="Estudo" points="80" diff="Hard" status="👀 Review" tone="berry" who="Manu" emoji="🗣️"></TaskCard>
+      <TaskCard title="Passear cachorro" cat="Pet" points="40" diff="Easy" status="👀 Review" tone="berry" who="Pedro" emoji="🐕"></TaskCard>
+    </div>
+  </div>
+
+  <div class="mt-8">
+    <div class="eyebrow">📚 Backlog · 5</div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+      <TaskCard title="Limpar geladeira" cat="Cozinha" points="80" diff="Hard" status="📚 Backlog" tone="plum" who="—" emoji="🧊"></TaskCard>
+      <TaskCard title="Trocar lâmpada quarto" cat="Casa" points="20" diff="Easy" status="📚 Backlog" tone="plum" who="—" emoji="💡"></TaskCard>
+      <TaskCard title="Lavar carro" cat="Carro" points="90" diff="Hard" status="📚 Backlog" tone="plum" who="—" emoji="🚗"></TaskCard>
+      <TaskCard title="Organizar despensa" cat="Cozinha" points="50" diff="Medium" status="📚 Backlog" tone="plum" who="—" emoji="🥫"></TaskCard>
+      <TaskCard title="Limpar janelas sala" cat="Limpeza" points="60" diff="Medium" status="📚 Backlog" tone="plum" who="—" emoji="🪟"></TaskCard>
+    </div>
+  </div>
+
+  <div class="mt-8">
+    <div class="eyebrow">✅ Done · 3</div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3" style="opacity: 0.6;">
+      <TaskCard title="Tirar lixo (semana 20)" cat="Limpeza" points="30" diff="Easy" status="✅ Done" tone="leaf" who="Manu" emoji="🗑️"></TaskCard>
+      <TaskCard title="Lavar louça (ontem)" cat="Cozinha" points="45" diff="Easy" status="✅ Done" tone="leaf" who="Manu" emoji="🍽️"></TaskCard>
+      <TaskCard title="Estudar mat (ontem)" cat="Estudo" points="80" diff="Hard" status="✅ Done" tone="leaf" who="Manu" emoji="📚"></TaskCard>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: CREATE TASK MODAL                       -->
+<!-- ============================================== -->
+<section id="create" class="screen">
+  <div class="grid md:grid-cols-2 gap-10 items-start">
+    <div>
+      <div class="eyebrow">Modal · Criar Task</div>
+      <h2 class="font-display text-4xl mt-1">Atribua uma quest.</h2>
+      <p class="mt-3 max-w-md" style="color: var(--ink-2);">
+        Define dificuldade e XP, escolhe quem vai assumir, e <span class="font-mono px-2 py-0.5 rounded-md text-xs" style="background: var(--bg-2);">Enter</span> pra criar.
+      </p>
+      <div class="mt-8 card-soft p-5 max-w-md">
+        <div class="eyebrow">Atalhos</div>
+        <div class="grid grid-cols-2 gap-2 mt-3 text-sm">
+          <div class="flex items-center gap-2"><kbd class="font-mono px-2 py-0.5 rounded" style="background: var(--bg-2); border:1px solid var(--line);">⌘ K</kbd> Quick task</div>
+          <div class="flex items-center gap-2"><kbd class="font-mono px-2 py-0.5 rounded" style="background: var(--bg-2); border:1px solid var(--line);">⌘ ↵</kbd> Criar</div>
+          <div class="flex items-center gap-2"><kbd class="font-mono px-2 py-0.5 rounded" style="background: var(--bg-2); border:1px solid var(--line);">Esc</kbd> Cancelar</div>
+          <div class="flex items-center gap-2"><kbd class="font-mono px-2 py-0.5 rounded" style="background: var(--bg-2); border:1px solid var(--line);">Tab</kbd> Próximo</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal mock -->
+    <div class="card-soft p-7 relative" style="border-radius: 28px;">
+      <div class="absolute -top-3 -right-3 chip pill-sunset">parent only</div>
+      <h3 class="font-display text-2xl">Nova task</h3>
+      <div class="mt-5">
+        <label class="eyebrow">Título</label>
+        <input value="Lavar o carro" class="w-full mt-2 px-4 py-3 rounded-2xl bg-transparent text-lg" style="border: 2px solid var(--line);"/>
+      </div>
+      <div class="mt-4">
+        <label class="eyebrow">Descrição (opcional)</label>
+        <textarea class="w-full mt-2 px-4 py-3 rounded-2xl bg-transparent text-sm h-20" style="border: 2px solid var(--line);" placeholder="Detalhes que ajudem quem vai fazer…">Use a mangueira do quintal, sabão na garagem.</textarea>
+      </div>
+      <div class="grid grid-cols-3 gap-3 mt-4">
+        <div>
+          <label class="eyebrow">Dificuldade</label>
+          <div class="flex items-center gap-1 mt-2">
+            <button class="px-3 py-2 rounded-xl text-xs font-semibold pill-leaf">🟢</button>
+            <button class="px-3 py-2 rounded-xl text-xs font-semibold pill-honey">🟡</button>
+            <button class="px-3 py-2 rounded-xl text-xs font-semibold" style="border:1px solid var(--line);">🔴</button>
+          </div>
+        </div>
+        <div>
+          <label class="eyebrow">XP base</label>
+          <input value="80" class="w-full mt-2 px-3 py-2 rounded-xl bg-transparent font-mono text-lg" style="border: 2px solid var(--line);"/>
+        </div>
+        <div>
+          <label class="eyebrow">Vence em</label>
+          <input value="Sábado" class="w-full mt-2 px-3 py-2 rounded-xl bg-transparent text-sm" style="border: 2px solid var(--line);"/>
+        </div>
+      </div>
+      <div class="mt-4">
+        <label class="eyebrow">Atribuir a</label>
+        <div class="flex items-center gap-2 mt-2">
+          <button class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold" style="background: linear-gradient(135deg, #FFE7DC, #FFD3C2);">
+            <span class="avatar w-7 h-7 text-xs" style="background: linear-gradient(135deg, #FF6B47, #E94560);">M</span>
+            Manu
+          </button>
+          <button class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm" style="background: var(--paper); border:1px solid var(--line);">
+            <span class="avatar w-7 h-7 text-xs" style="background: linear-gradient(135deg, #FFB627, #FF8C42);">P</span>
+            Pedro
+          </button>
+          <button class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm" style="background: var(--paper); border:1px solid var(--line);">
+            <span class="avatar w-7 h-7 text-xs" style="background: linear-gradient(135deg, #7FB069, #4F86C6);">B</span>
+            Bia
+          </button>
+        </div>
+      </div>
+      <div class="flex items-center justify-between mt-7">
+        <div class="text-xs font-mono" style="color: var(--ink-2);">📌 Será criada com status 🎯 To Do</div>
+        <div class="flex gap-2">
+          <button class="btn-ghost rounded-xl px-4 py-2 text-sm font-semibold">Cancelar</button>
+          <button class="btn-primary rounded-xl px-5 py-2 text-sm font-semibold">Criar quest →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: APPROVAL QUEUE                          -->
+<!-- ============================================== -->
+<section id="approval" class="screen">
+  <div class="flex items-end justify-between flex-wrap gap-4">
+    <div>
+      <div class="eyebrow rise flex items-center gap-2">
+        <span class="chip pill-berry">parent</span>
+        Fila de aprovações
+      </div>
+      <h2 class="font-display text-4xl mt-1 rise d1">5 tarefas aguardando você.</h2>
+      <p class="mt-2 rise d2" style="color: var(--ink-2);">Aprove rapidinho pra creditar XP ainda hoje. Bulk action disponível.</p>
+    </div>
+    <div class="flex items-center gap-2 rise d3">
+      <button class="btn-ghost rounded-xl px-4 py-2 text-sm font-semibold">Selecionar todas</button>
+      <button class="rounded-xl px-4 py-2 text-sm font-semibold" style="background: linear-gradient(180deg, #98D17F, #5C8C44); color: white; box-shadow: 0 6px 18px -6px rgba(92,140,68,0.6);">Aprovar 5 ⚡</button>
+    </div>
+  </div>
+
+  <div class="mt-8 grid md:grid-cols-2 gap-4">
+    <ApprovalCard who="Manu" emoji="M" color="sunset" task="Tirar lixo da semana" cat="Limpeza" points="30" diff="Easy" time="há 2h"></ApprovalCard>
+    <ApprovalCard who="Pedro" emoji="P" color="honey" task="Organizar armário" cat="Quarto" points="70" diff="Medium" time="há 4h"></ApprovalCard>
+    <ApprovalCard who="Manu" emoji="M" color="sunset" task="Estudar inglês 30min" cat="Estudo" points="80" diff="Hard" time="há 5h" hasNote="true"></ApprovalCard>
+    <ApprovalCard who="Bia" emoji="B" color="leaf" task="Regar plantas" cat="Plantas" points="20" diff="Easy" time="há 6h"></ApprovalCard>
+    <ApprovalCard who="Pedro" emoji="P" color="honey" task="Passear com cachorro" cat="Pet" points="40" diff="Easy" time="ontem"></ApprovalCard>
+    <ApprovalCard who="Manu" emoji="M" color="sunset" task="Lavar louça do almoço" cat="Cozinha" points="45" diff="Easy" time="ontem" hasNote="true"></ApprovalCard>
+    <ApprovalCard who="Bia" emoji="B" color="leaf" task="Arrumar sapatos da entrada" cat="Casa" points="25" diff="Easy" time="ontem"></ApprovalCard>
+    <ApprovalCard who="Pedro" emoji="P" color="honey" task="Estudar matemática 1h" cat="Estudo" points="120" diff="Hard" time="2 dias"></ApprovalCard>
+    <ApprovalCard who="Manu" emoji="M" color="sunset" task="Lavar tênis sujo" cat="Limpeza" points="50" diff="Medium" time="2 dias"></ApprovalCard>
+  </div>
+
+  <!-- Stats row -->
+  <div class="mt-8 grid grid-cols-3 gap-4">
+    <div class="card-soft p-5 text-center">
+      <div class="eyebrow">Aprovadas hoje</div>
+      <div class="font-display text-3xl mt-1" style="color: var(--leaf);">8</div>
+    </div>
+    <div class="card-soft p-5 text-center">
+      <div class="eyebrow">Tempo médio aprovação</div>
+      <div class="font-display text-3xl mt-1">3h</div>
+      <div class="text-xs" style="color: var(--ink-2);">▼ -2h vs semana</div>
+    </div>
+    <div class="card-soft p-5 text-center">
+      <div class="eyebrow">XP creditado hoje</div>
+      <div class="font-display text-3xl mt-1" style="color: var(--sunset);">+420</div>
+    </div>
+  </div>
+
+  <!-- Rejected examples -->
+  <div class="mt-10">
+    <div class="eyebrow">Histórico recente · Rejeitadas</div>
+    <div class="mt-3 space-y-2">
+      <div class="card-soft p-4 flex items-center gap-3" style="background: linear-gradient(90deg, rgba(233,69,96,0.05), transparent);">
+        <span class="avatar w-10 h-10" style="background: linear-gradient(135deg, #FF6B47, #E94560);">M</span>
+        <div class="flex-1">
+          <div class="font-display text-base">Lavar louça (rejeitada)</div>
+          <div class="text-xs font-mono" style="color: var(--ink-2);">Manu · ontem · Razão: "Ainda tinha louça suja no balcão"</div>
+        </div>
+        <span class="chip" style="background: #FFD9DD; color: #6B0F1A;">✕ rejected</span>
+      </div>
+      <div class="card-soft p-4 flex items-center gap-3" style="background: linear-gradient(90deg, rgba(233,69,96,0.05), transparent);">
+        <span class="avatar w-10 h-10" style="background: linear-gradient(135deg, #FFB627, #FF8C42);">P</span>
+        <div class="flex-1">
+          <div class="font-display text-base">Limpar quarto (rejeitada)</div>
+          <div class="text-xs font-mono" style="color: var(--ink-2);">Pedro · 2 dias · Razão: "Brinquedos ainda no chão"</div>
+        </div>
+        <span class="chip" style="background: #FFD9DD; color: #6B0F1A;">✕ rejected</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: REWARDS SHOP                            -->
+<!-- ============================================== -->
+<section id="rewards" class="screen">
+  <div class="ribbon-bg rounded-[28px] p-8 border" style="border-color: var(--line);">
+    <div class="flex items-end justify-between flex-wrap gap-4">
+      <div>
+        <div class="eyebrow rise">Loja de recompensas</div>
+        <h2 class="font-display text-5xl mt-1 rise d1" style="line-height:0.95;">
+          Troque XP por <span style="background: linear-gradient(120deg, var(--honey), var(--sunset)); -webkit-background-clip:text; color:transparent;">coisas reais.</span>
+        </h2>
+      </div>
+      <div class="card-soft px-5 py-3 rise d2">
+        <div class="text-[10px] uppercase tracking-widest" style="color: var(--ink-2);">Seu saldo</div>
+        <div class="font-display text-3xl">1.240 <span class="text-base font-mono" style="color: var(--ink-2);">XP</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Categorias -->
+  <div class="flex items-center gap-2 mt-8 flex-wrap">
+    <span class="chip pill-ink">Tudo · 12</span>
+    <span class="chip" style="background: var(--paper); border:1px solid var(--line);">🍕 Comida · 3</span>
+    <span class="chip" style="background: var(--paper); border:1px solid var(--line);">🎮 Diversão · 4</span>
+    <span class="chip" style="background: var(--paper); border:1px solid var(--line);">💰 Mesada · 2</span>
+    <span class="chip" style="background: var(--paper); border:1px solid var(--line);">🌃 Privilégios · 3</span>
+    <div class="ml-auto"></div>
+    <button class="btn-ghost rounded-xl px-3 py-1.5 text-xs">Ordenar: Preço ⌄</button>
+  </div>
+
+  <div class="eyebrow mt-8">🍕 Comida & doces</div>
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
+    <RewardCard emoji="🍕" name="Pizza sexta" cost="500" stock="∞" tone="sunset" affordable="true"></RewardCard>
+    <RewardCard emoji="🍦" name="Sorvete grande" cost="150" stock="∞" tone="honey" affordable="true"></RewardCard>
+    <RewardCard emoji="🍔" name="McDonald's combo" cost="400" stock="∞" tone="sunset" affordable="true"></RewardCard>
+  </div>
+
+  <div class="eyebrow mt-8">🎮 Diversão</div>
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
+    <RewardCard emoji="🎮" name="30min vídeo-game" cost="100" stock="5" tone="berry" affordable="true"></RewardCard>
+    <RewardCard emoji="🎬" name="Cinema (1 sessão)" cost="800" stock="2" tone="plum" affordable="true"></RewardCard>
+    <RewardCard emoji="🎢" name="Parque diversões" cost="2000" stock="1" tone="berry" affordable="false"></RewardCard>
+    <RewardCard emoji="📺" name="1h Netflix livre" cost="80" stock="∞" tone="berry" affordable="true"></RewardCard>
+  </div>
+
+  <div class="eyebrow mt-8">💰 Mesada extra</div>
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
+    <RewardCard emoji="🛍️" name="R$ 20 mesada extra" cost="1500" stock="1" tone="leaf" affordable="false"></RewardCard>
+    <RewardCard emoji="💵" name="R$ 50 mesada extra" cost="3500" stock="1" tone="leaf" affordable="false"></RewardCard>
+  </div>
+
+  <div class="eyebrow mt-8">🌃 Privilégios</div>
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
+    <RewardCard emoji="🌃" name="Dormir mais tarde (1h)" cost="200" stock="∞" tone="sky" affordable="true"></RewardCard>
+    <RewardCard emoji="🛌" name="Pular tarefa (1x)" cost="600" stock="2" tone="sky" affordable="false"></RewardCard>
+    <RewardCard emoji="📱" name="1h celular extra" cost="120" stock="∞" tone="sky" affordable="true"></RewardCard>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: RANKING                                 -->
+<!-- ============================================== -->
+<section id="ranking" class="screen">
+  <div class="eyebrow rise">Leaderboard</div>
+  <h2 class="font-display text-5xl mt-1 rise d1" style="line-height:0.95;">Ranking da família.</h2>
+  <p class="mt-2 rise d2" style="color: var(--ink-2);">Esta semana · reseta domingo 23:59</p>
+
+  <div class="grid lg:grid-cols-3 gap-4 mt-10">
+    <!-- Podium -->
+    <div class="lg:col-span-2">
+      <div class="grid grid-cols-3 gap-3 items-end">
+        <div class="card-soft p-5 text-center" style="margin-top: 30px;">
+          <div class="font-display text-5xl">2</div>
+          <div class="avatar w-12 h-12 text-base mx-auto mt-2" style="background: linear-gradient(135deg, #FFB627, #FF8C42);">P</div>
+          <div class="font-display text-xl mt-2">Pedro</div>
+          <div class="font-mono text-xs mt-1" style="color: var(--ink-2);">980 XP · L6</div>
+          <div class="mt-3 h-20 rounded-t-xl" style="background: linear-gradient(180deg, #FFE2A8, #FFB627);"></div>
+        </div>
+        <div class="card-soft p-6 text-center" style="background: linear-gradient(180deg, #FFEFD8, #FFF8F0);">
+          <div class="text-2xl">👑</div>
+          <div class="font-display text-6xl">1</div>
+          <div class="avatar w-14 h-14 text-lg mx-auto mt-2" style="background: linear-gradient(135deg, #FF6B47, #E94560);">M</div>
+          <div class="font-display text-2xl mt-2">Manu</div>
+          <div class="font-mono text-xs mt-1" style="color: var(--ink-2);">1.240 XP · L7</div>
+          <div class="flex items-center justify-center gap-1 mt-2 text-xs">
+            <span class="chip pill-sunset">🔥 14d streak</span>
+          </div>
+          <div class="mt-4 h-28 rounded-t-2xl" style="background: linear-gradient(180deg, #FFD3C2, #FF6B47);"></div>
+        </div>
+        <div class="card-soft p-5 text-center" style="margin-top: 50px;">
+          <div class="font-display text-5xl">3</div>
+          <div class="avatar w-12 h-12 text-base mx-auto mt-2" style="background: linear-gradient(135deg, #7FB069, #4F86C6);">B</div>
+          <div class="font-display text-xl mt-2">Bia</div>
+          <div class="font-mono text-xs mt-1" style="color: var(--ink-2);">820 XP · L5</div>
+          <div class="mt-3 h-14 rounded-t-xl" style="background: linear-gradient(180deg, #DEEFD0, #7FB069);"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side: rules + your pos -->
+    <div class="card-soft p-6">
+      <div class="eyebrow">Você</div>
+      <div class="font-display text-3xl mt-1">#1 ✨</div>
+      <div class="font-mono text-xs mt-1" style="color: var(--ink-2);">+260 XP vs 2º lugar</div>
+      <div class="accent-line my-5"></div>
+      <div class="eyebrow">Regras</div>
+      <ul class="text-sm mt-3 space-y-2">
+        <li>• Reseta domingo às 23:59</li>
+        <li>• Top 3 ganha badge da semana</li>
+        <li>• 1º lugar: bônus +100 XP</li>
+        <li>• Quem fica em último tira o lixo 🗑️</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Full table -->
+  <div class="mt-10">
+    <div class="eyebrow">Completo</div>
+    <div class="card-soft mt-3">
+      <RankRow rank="1" name="Manu" lvl="L7" xp="1.240" you="true" color="sunset"></RankRow>
+      <RankRow rank="2" name="Pedro" lvl="L6" xp="980" color="honey"></RankRow>
+      <RankRow rank="3" name="Bia" lvl="L5" xp="820" color="leaf"></RankRow>
+      <RankRow rank="4" name="Mãe (Maria)" lvl="L4" xp="640" color="sky"></RankRow>
+      <RankRow rank="5" name="Pai (João)" lvl="L3" xp="420" color="plum"></RankRow>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: FAMILY MANAGE                           -->
+<!-- ============================================== -->
+<section id="family" class="screen">
+  <div class="flex items-end justify-between flex-wrap gap-4">
+    <div>
+      <div class="eyebrow rise flex items-center gap-2"><span class="chip pill-plum">parent only</span> Família</div>
+      <h2 class="font-display text-4xl mt-1 rise d1">Os Silva</h2>
+      <p class="mt-1 rise d2" style="color: var(--ink-2);">5 membros · criado em jan 2026</p>
+    </div>
+    <button class="btn-primary rounded-xl px-5 py-2.5 text-sm font-semibold rise d3">+ Convidar membro</button>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-4 mt-8">
+    <MemberCard name="Maria" role="parent" emoji="M" color="sunset" stats="L4 · 640 XP"></MemberCard>
+    <MemberCard name="João" role="parent" emoji="J" color="berry" stats="L3 · 420 XP"></MemberCard>
+    <MemberCard name="Manu" role="child" emoji="M" color="honey" stats="L7 · 1.240 XP · 🔥 14d"></MemberCard>
+    <MemberCard name="Pedro" role="child" emoji="P" color="leaf" stats="L6 · 980 XP · 🔥 7d"></MemberCard>
+    <MemberCard name="Bia" role="child" emoji="B" color="sky" stats="L5 · 820 XP · 🔥 3d"></MemberCard>
+  </div>
+
+  <!-- Family stats -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8">
+    <div class="card-soft p-4">
+      <div class="eyebrow">Total XP família</div>
+      <div class="font-display text-2xl mt-1">4.100</div>
+    </div>
+    <div class="card-soft p-4">
+      <div class="eyebrow">Tasks/semana</div>
+      <div class="font-display text-2xl mt-1">47</div>
+    </div>
+    <div class="card-soft p-4">
+      <div class="eyebrow">Avg streak</div>
+      <div class="font-display text-2xl mt-1">8d</div>
+    </div>
+    <div class="card-soft p-4">
+      <div class="eyebrow">Recompensas</div>
+      <div class="font-display text-2xl mt-1">12</div>
+    </div>
+  </div>
+
+  <!-- Pending invites -->
+  <div class="mt-10">
+    <div class="eyebrow">Convites pendentes · 2</div>
+    <div class="mt-3 space-y-2">
+      <div class="card-soft p-5 flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" style="background: var(--bg-2);">💌</div>
+          <div>
+            <div class="font-display text-lg">vovó@familia.com</div>
+            <div class="text-xs font-mono mt-1" style="color: var(--ink-2);">role: parent · enviado há 2d · expira em 5d</div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn-ghost rounded-xl px-3 py-2 text-xs">📨 Reenviar</button>
+          <button class="btn-ghost rounded-xl px-3 py-2 text-xs">🔗 Copiar link</button>
+          <button class="rounded-xl px-3 py-2 text-xs font-semibold" style="background: transparent; color: var(--berry); border: 1.5px solid var(--berry);">Cancelar</button>
+        </div>
+      </div>
+      <div class="card-soft p-5 flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" style="background: var(--bg-2);">💌</div>
+          <div>
+            <div class="font-display text-lg">tio.carlos@exemplo.com</div>
+            <div class="text-xs font-mono mt-1" style="color: var(--ink-2);">role: parent · enviado há 6d · ⚠️ expira amanhã</div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn-primary rounded-xl px-3 py-2 text-xs">📨 Reenviar agora</button>
+          <button class="rounded-xl px-3 py-2 text-xs font-semibold" style="background: transparent; color: var(--berry); border: 1.5px solid var(--berry);">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent family events -->
+  <div class="mt-10">
+    <div class="eyebrow">Eventos recentes da família</div>
+    <div class="mt-3 grid md:grid-cols-2 gap-2">
+      <div class="card-soft p-3 flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg" style="background: var(--bg-2);">🌱</div>
+        <div class="flex-1">
+          <div class="text-sm font-semibold">Bia entrou na família</div>
+          <div class="text-xs font-mono" style="color: var(--ink-2);">há 3 semanas</div>
+        </div>
+      </div>
+      <div class="card-soft p-3 flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg" style="background: var(--bg-2);">⭐</div>
+        <div class="flex-1">
+          <div class="text-sm font-semibold">Manu fez Level Up L6→L7</div>
+          <div class="text-xs font-mono" style="color: var(--ink-2);">ontem</div>
+        </div>
+      </div>
+      <div class="card-soft p-3 flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg" style="background: var(--bg-2);">🎁</div>
+        <div class="flex-1">
+          <div class="text-sm font-semibold">Maria adicionou recompensa "Cinema"</div>
+          <div class="text-xs font-mono" style="color: var(--ink-2);">há 2 dias</div>
+        </div>
+      </div>
+      <div class="card-soft p-3 flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg" style="background: var(--bg-2);">🏆</div>
+        <div class="flex-1">
+          <div class="text-sm font-semibold">Pedro desbloqueou badge "Helper"</div>
+          <div class="text-xs font-mono" style="color: var(--ink-2);">9 dias atrás</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Family settings -->
+  <div class="card-soft p-6 mt-10" style="background: linear-gradient(135deg, #E6D7EA, #C9ADD2); border-color: #6B3F73;">
+    <div class="flex items-center gap-2 mb-4">
+      <span class="chip pill-plum">parent only</span>
+      <span class="font-display text-lg">Configurações da família</span>
+    </div>
+    <div class="grid md:grid-cols-2 gap-3">
+      <div>
+        <label class="eyebrow">Nome da família</label>
+        <input value="Os Silva" class="w-full mt-2 px-4 py-2 rounded-xl bg-transparent text-sm" style="border: 2px solid var(--paper);"/>
+      </div>
+      <div>
+        <label class="eyebrow">Emoji</label>
+        <input value="🏠" class="w-full mt-2 px-4 py-2 rounded-xl bg-transparent text-sm" style="border: 2px solid var(--paper);"/>
+      </div>
+      <div>
+        <label class="eyebrow">Multiplier global</label>
+        <select class="w-full mt-2 px-4 py-2 rounded-xl bg-transparent text-sm" style="border: 2px solid var(--paper);">
+          <option>1.0x (padrão)</option>
+          <option>1.5x (evento especial)</option>
+          <option>2.0x (fim de semana XP)</option>
+        </select>
+      </div>
+      <div>
+        <label class="eyebrow">Reset ranking</label>
+        <select class="w-full mt-2 px-4 py-2 rounded-xl bg-transparent text-sm" style="border: 2px solid var(--paper);">
+          <option>Domingo 23:59</option>
+          <option>Sábado 23:59</option>
+          <option>Último dia do mês</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-primary rounded-xl px-5 py-2 text-sm font-semibold mt-5">Salvar mudanças</button>
+  </div>
+
+  <!-- Danger zone -->
+  <div class="card-soft p-6 mt-6" style="border: 2px solid var(--berry);">
+    <div class="eyebrow" style="color: var(--berry);">⚠️ Zona de perigo</div>
+    <div class="mt-3 flex items-center justify-between flex-wrap gap-3">
+      <div>
+        <div class="font-display text-lg">Deletar família permanentemente</div>
+        <div class="text-xs" style="color: var(--ink-2);">Todos os dados serão apagados após 30 dias</div>
+      </div>
+      <button class="rounded-xl px-4 py-2 text-sm font-semibold" style="background: transparent; color: var(--berry); border: 1.5px solid var(--berry);" onclick="show('confirm-destroy')">Deletar família</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: ONBOARDING (first session)              -->
+<!-- ============================================== -->
+<section id="onboarding" class="screen">
+  <div class="grid lg:grid-cols-2 gap-8 items-center min-h-[80vh]">
+    <div>
+      <div class="eyebrow rise">Primeiro acesso</div>
+      <h2 class="font-display text-5xl md:text-6xl mt-2 rise d1" style="line-height:0.95;">
+        Bem-vindo, <span style="background: linear-gradient(120deg, var(--sunset), var(--berry)); -webkit-background-clip:text; background-clip: text; color: transparent;">aventureiro!</span>
+      </h2>
+      <p class="mt-4 max-w-md rise d2" style="color: var(--ink-2);">
+        Em 3 passos rápidos, você cria sua família e começa a transformar a casa em quest.
+      </p>
+
+      <div class="mt-8 space-y-3 rise d3">
+        <div class="flex items-center gap-4 card-soft p-4">
+          <div class="w-10 h-10 rounded-2xl flex items-center justify-center font-display text-lg text-white" style="background: linear-gradient(135deg, #FF6B47, #E94560);">1</div>
+          <div class="flex-1">
+            <div class="font-display text-lg">Crie sua conta parent</div>
+            <div class="text-xs" style="color: var(--ink-2);">Email + senha + nome</div>
+          </div>
+          <span class="chip pill-leaf">✓ feito</span>
+        </div>
+        <div class="flex items-center gap-4 card-soft p-4" style="outline: 2px solid var(--sunset); outline-offset: 2px;">
+          <div class="w-10 h-10 rounded-2xl flex items-center justify-center font-display text-lg text-white" style="background: linear-gradient(135deg, #FFB627, #FF8C42);">2</div>
+          <div class="flex-1">
+            <div class="font-display text-lg">Nomeie a família</div>
+            <div class="text-xs" style="color: var(--ink-2);">Convide os membros depois</div>
+          </div>
+          <span class="chip pill-honey">agora</span>
+        </div>
+        <div class="flex items-center gap-4 card-soft p-4" style="opacity:0.5;">
+          <div class="w-10 h-10 rounded-2xl flex items-center justify-center font-display text-lg" style="background: var(--line); color: var(--ink-2);">3</div>
+          <div class="flex-1">
+            <div class="font-display text-lg">Crie primeira task</div>
+            <div class="text-xs" style="color: var(--ink-2);">Demo com sugestões</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-soft p-8 rise d2">
+      <div class="eyebrow">Passo 2 · Família</div>
+      <h3 class="font-display text-3xl mt-2">Como vamos chamar?</h3>
+      <input value="Os Silva" class="w-full mt-6 px-5 py-4 rounded-2xl bg-transparent text-2xl font-display" style="border: 2px solid var(--line);"/>
+      <div class="mt-3 text-xs" style="color: var(--ink-2);">Pode mudar depois nas configurações</div>
+
+      <div class="mt-8">
+        <div class="eyebrow">Emoji da família 🎨</div>
+        <div class="flex gap-2 mt-3 flex-wrap">
+          <button class="text-2xl w-12 h-12 rounded-2xl card-soft" style="background: linear-gradient(135deg, #FFE7DC, #FFD3C2);">🏠</button>
+          <button class="text-2xl w-12 h-12 rounded-2xl card-soft">🦄</button>
+          <button class="text-2xl w-12 h-12 rounded-2xl card-soft">🐻</button>
+          <button class="text-2xl w-12 h-12 rounded-2xl card-soft">🌈</button>
+          <button class="text-2xl w-12 h-12 rounded-2xl card-soft">🚀</button>
+          <button class="text-2xl w-12 h-12 rounded-2xl card-soft">⭐</button>
+          <button class="text-2xl w-12 h-12 rounded-2xl card-soft">🍕</button>
+        </div>
+      </div>
+
+      <div class="mt-8">
+        <div class="eyebrow">Tipo de tarefa que mais cansa em casa</div>
+        <div class="flex gap-2 mt-3 flex-wrap text-sm">
+          <button class="chip pill-sunset">🧹 Limpeza</button>
+          <button class="chip" style="background: var(--paper); border:1px solid var(--line);">🍳 Cozinha</button>
+          <button class="chip" style="background: var(--paper); border:1px solid var(--line);">📚 Estudo</button>
+          <button class="chip" style="background: var(--paper); border:1px solid var(--line);">🐶 Pet</button>
+          <button class="chip" style="background: var(--paper); border:1px solid var(--line);">🪴 Plantas</button>
+        </div>
+        <div class="text-xs mt-2" style="color: var(--ink-2);">Usaremos pra sugerir tasks de exemplo</div>
+      </div>
+
+      <div class="flex items-center justify-between mt-8">
+        <button class="btn-ghost rounded-xl px-4 py-2 text-sm font-semibold">← voltar</button>
+        <button class="btn-primary rounded-xl px-6 py-3 font-semibold">Próximo →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: PARENT DASHBOARD                        -->
+<!-- ============================================== -->
+<section id="parent-dash" class="screen">
+  <div class="flex items-end justify-between flex-wrap gap-4">
+    <div>
+      <div class="eyebrow rise flex items-center gap-2"><span class="chip pill-plum">parent view</span> Casa Silva</div>
+      <h2 class="font-display text-5xl mt-1 rise d1" style="line-height:0.95;">Bom dia, Maria 🌅</h2>
+      <p class="mt-2 rise d2" style="color: var(--ink-2);">Esta semana sua família ganhou <strong>3.460 XP</strong> · +24% vs semana passada</p>
+    </div>
+    <div class="flex items-center gap-2 rise d3">
+      <button class="btn-ghost rounded-xl px-4 py-2 text-sm font-semibold">Esta semana ⌄</button>
+      <button class="btn-primary rounded-xl px-4 py-2 text-sm font-semibold">+ Nova task</button>
+    </div>
+  </div>
+
+  <!-- Stats row -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+    <div class="card-soft p-5">
+      <div class="eyebrow">Aguardando você</div>
+      <div class="font-display text-4xl mt-1" style="color: var(--berry);">5</div>
+      <div class="text-xs mt-1" style="color: var(--ink-2);">aprovações pendentes</div>
+    </div>
+    <div class="card-soft p-5">
+      <div class="eyebrow">Concluídas hoje</div>
+      <div class="font-display text-4xl mt-1" style="color: var(--leaf);">12</div>
+      <div class="text-xs mt-1" style="color: var(--ink-2);">por toda família</div>
+    </div>
+    <div class="card-soft p-5">
+      <div class="eyebrow">XP total semana</div>
+      <div class="font-display text-4xl mt-1">3.460</div>
+      <div class="text-xs mt-1" style="color: var(--leaf);">▲ +24% vs semana</div>
+    </div>
+    <div class="card-soft p-5">
+      <div class="eyebrow">Recompensas resgatadas</div>
+      <div class="font-display text-4xl mt-1">7</div>
+      <div class="text-xs mt-1" style="color: var(--ink-2);">R$ 84 em valor</div>
+    </div>
+  </div>
+
+  <!-- 2-col -->
+  <div class="grid lg:grid-cols-3 gap-4 mt-8">
+    <!-- Approval queue mini -->
+    <div class="lg:col-span-2 card-soft p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="eyebrow">Ação requerida</div>
+          <h3 class="font-display text-2xl">Aprovar tarefas</h3>
+        </div>
+        <button class="btn-primary rounded-xl px-4 py-2 text-sm font-semibold" onclick="show('approval')">Ver fila completa →</button>
+      </div>
+      <div class="mt-5 space-y-2">
+        <div class="card-soft p-4 flex items-center gap-3 lift">
+          <span class="avatar w-10 h-10" style="background: linear-gradient(135deg, #FFB627, #FF8C42);">P</span>
+          <div class="flex-1">
+            <div class="font-display text-base">Tirar lixo da semana</div>
+            <div class="text-xs font-mono" style="color: var(--ink-2);">Pedro · há 2h · +30 XP · easy</div>
+          </div>
+          <button class="rounded-xl px-3 py-1.5 text-xs font-semibold" style="background: linear-gradient(180deg, #98D17F, #5C8C44); color: white;">✓</button>
+          <button class="rounded-xl px-3 py-1.5 text-xs font-semibold" style="background: transparent; color: var(--berry); border: 1.5px solid var(--berry);">✕</button>
+        </div>
+        <div class="card-soft p-4 flex items-center gap-3 lift">
+          <span class="avatar w-10 h-10" style="background: linear-gradient(135deg, #FF6B47, #E94560);">M</span>
+          <div class="flex-1">
+            <div class="font-display text-base">Estudar inglês 30min</div>
+            <div class="text-xs font-mono" style="color: var(--ink-2);">Manu · há 5h · +80 XP · hard 📝 com nota</div>
+          </div>
+          <button class="rounded-xl px-3 py-1.5 text-xs font-semibold" style="background: linear-gradient(180deg, #98D17F, #5C8C44); color: white;">✓</button>
+          <button class="rounded-xl px-3 py-1.5 text-xs font-semibold" style="background: transparent; color: var(--berry); border: 1.5px solid var(--berry);">✕</button>
+        </div>
+        <div class="card-soft p-4 flex items-center gap-3 lift">
+          <span class="avatar w-10 h-10" style="background: linear-gradient(135deg, #7FB069, #4F86C6);">B</span>
+          <div class="flex-1">
+            <div class="font-display text-base">Regar plantas</div>
+            <div class="text-xs font-mono" style="color: var(--ink-2);">Bia · há 6h · +20 XP · easy</div>
+          </div>
+          <button class="rounded-xl px-3 py-1.5 text-xs font-semibold" style="background: linear-gradient(180deg, #98D17F, #5C8C44); color: white;">✓</button>
+          <button class="rounded-xl px-3 py-1.5 text-xs font-semibold" style="background: transparent; color: var(--berry); border: 1.5px solid var(--berry);">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bar chart -->
+    <div class="card-soft p-6">
+      <div class="eyebrow">XP por criança · semana</div>
+      <div class="mt-5 space-y-3">
+        <div>
+          <div class="flex justify-between text-xs font-mono mb-1"><span>Manu</span><span style="color: var(--ink-2);">1.240</span></div>
+          <div class="h-3 rounded-full" style="background: var(--bg-2);">
+            <div class="h-full rounded-full xp-fill" style="--w: 100%; background: linear-gradient(90deg, #FFB627, #FF6B47);"></div>
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between text-xs font-mono mb-1"><span>Pedro</span><span style="color: var(--ink-2);">980</span></div>
+          <div class="h-3 rounded-full" style="background: var(--bg-2);">
+            <div class="h-full rounded-full xp-fill" style="--w: 79%; background: linear-gradient(90deg, #FFB627, #FF8C42);"></div>
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between text-xs font-mono mb-1"><span>Bia</span><span style="color: var(--ink-2);">820</span></div>
+          <div class="h-3 rounded-full" style="background: var(--bg-2);">
+            <div class="h-full rounded-full xp-fill" style="--w: 66%; background: linear-gradient(90deg, #7FB069, #5C8C44);"></div>
+          </div>
+        </div>
+      </div>
+      <div class="accent-line my-5"></div>
+      <div class="eyebrow">Insight da semana</div>
+      <p class="text-sm mt-2" style="color: var(--ink-2);">
+        💡 Bia está em ascensão (+340 XP vs semana passada). Considere uma recompensa especial.
+      </p>
+    </div>
+  </div>
+
+  <!-- Weekly heatmap -->
+  <div class="mt-10 card-soft p-6">
+    <div class="eyebrow">Calendário de atividades</div>
+    <div class="font-display text-2xl mt-1">Heatmap · últimos 28 dias</div>
+    <div class="grid grid-cols-7 gap-1 mt-5 max-w-md">
+      <script>
+        // gen heatmap inline
+      </script>
+      <!-- 28 cells static for visual -->
+      <Heatmap></Heatmap>
+    </div>
+    <div class="flex items-center gap-3 mt-4 text-xs" style="color: var(--ink-2);">
+      menos
+      <div class="w-3 h-3 rounded" style="background: var(--bg-2);"></div>
+      <div class="w-3 h-3 rounded" style="background: #DEEFD0;"></div>
+      <div class="w-3 h-3 rounded" style="background: #7FB069;"></div>
+      <div class="w-3 h-3 rounded" style="background: #5C8C44;"></div>
+      <div class="w-3 h-3 rounded" style="background: #2E5A1B;"></div>
+      mais
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: LEVEL UP CELEBRATION                    -->
+<!-- ============================================== -->
+<section id="levelup" class="screen">
+  <div class="text-center">
+    <div class="eyebrow rise">Modal · Celebração</div>
+    <h2 class="font-display text-4xl mt-1 rise d1">Level Up celebration overlay</h2>
+    <p class="mt-2 rise d2 max-w-2xl mx-auto" style="color: var(--ink-2);">
+      Disparado quando user passa de nível. Backdrop blur + confetti + nova badge desbloqueada.
+    </p>
+  </div>
+
+  <!-- Mock screen behind -->
+  <div class="mt-12 relative max-w-3xl mx-auto card-soft p-8 ribbon-bg" style="filter: blur(2px); opacity: 0.5;">
+    <div class="font-display text-3xl">Dashboard ChoreQuest</div>
+    <div class="grid grid-cols-3 gap-3 mt-5">
+      <div class="card-soft p-4"><div class="font-display text-2xl">L8</div><div class="text-xs">XP</div></div>
+      <div class="card-soft p-4"><div class="font-display text-2xl">14d</div><div class="text-xs">Streak</div></div>
+      <div class="card-soft p-4"><div class="font-display text-2xl">3</div><div class="text-xs">Hoje</div></div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="relative max-w-md mx-auto -mt-72 mb-12 rise d3">
+    <!-- Confetti decoration -->
+    <div class="absolute -top-4 -left-4 text-3xl rotate-12">🎉</div>
+    <div class="absolute -top-2 right-6 text-2xl -rotate-6">⭐</div>
+    <div class="absolute top-4 -right-6 text-3xl rotate-6">✨</div>
+    <div class="absolute -bottom-4 -right-4 text-3xl -rotate-12">🎊</div>
+    <div class="absolute -bottom-2 left-6 text-2xl rotate-6">⭐</div>
+
+    <div class="card-soft p-8 text-center" style="background: linear-gradient(180deg, #FFFDF8, #FFEFD8); border-radius: 32px;">
+      <div class="eyebrow" style="color: var(--berry);">LEVEL UP</div>
+      <div class="font-display text-7xl mt-3" style="background: linear-gradient(120deg, var(--sunset), var(--berry), var(--plum)); -webkit-background-clip:text; background-clip: text; color:transparent; line-height:1;">
+        L8
+      </div>
+      <div class="font-display text-2xl mt-2">Aventureiro Pleno!</div>
+
+      <div class="card-soft p-4 mt-7" style="background: var(--paper);">
+        <div class="eyebrow" style="color: var(--leaf);">+ Nova badge desbloqueada</div>
+        <div class="flex items-center justify-center gap-3 mt-3">
+          <div class="w-16 h-16 rounded-3xl flex items-center justify-center text-3xl" style="background: linear-gradient(135deg, #FFB627, #E94560); box-shadow: 0 8px 24px -8px rgba(233,69,96,0.5);">🏆</div>
+          <div class="text-left">
+            <div class="font-display text-xl">Streak Warrior</div>
+            <div class="text-xs" style="color: var(--ink-2);">Mantenha streak por 14 dias</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mt-6">
+        <div class="card-soft p-3">
+          <div class="eyebrow">Próximo nível</div>
+          <div class="font-display text-lg mt-1">L9 · em 660 XP</div>
+        </div>
+        <div class="card-soft p-3">
+          <div class="eyebrow">Novo perk</div>
+          <div class="font-display text-lg mt-1">+5% bonus XP</div>
+        </div>
+      </div>
+
+      <button class="btn-primary rounded-2xl w-full mt-7 py-3.5 font-semibold text-lg">Continuar quest →</button>
+      <div class="text-xs mt-3" style="color: var(--ink-2);">Compartilhe com a família 🎉</div>
+    </div>
+  </div>
+
+  <!-- Other celebrations -->
+  <div class="mt-12">
+    <div class="eyebrow text-center">Outras celebrações</div>
+    <div class="grid md:grid-cols-3 gap-4 mt-4">
+      <div class="card-soft p-5 text-center">
+        <div class="text-4xl">🔥</div>
+        <div class="font-display text-lg mt-2">Streak 7 dias!</div>
+        <div class="text-xs mt-1" style="color: var(--ink-2);">+50 XP bônus</div>
+      </div>
+      <div class="card-soft p-5 text-center">
+        <div class="text-4xl">🎁</div>
+        <div class="font-display text-lg mt-2">Recompensa resgatada</div>
+        <div class="text-xs mt-1" style="color: var(--ink-2);">Pizza sexta -500 XP</div>
+      </div>
+      <div class="card-soft p-5 text-center">
+        <div class="text-4xl">👑</div>
+        <div class="font-display text-lg mt-2">1º no ranking semanal</div>
+        <div class="text-xs mt-1" style="color: var(--ink-2);">+100 XP bônus</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: NOTIFICATIONS DRAWER                    -->
+<!-- ============================================== -->
+<section id="notifications" class="screen">
+  <div class="grid lg:grid-cols-2 gap-10">
+    <div>
+      <div class="eyebrow rise">Drawer · Notificações</div>
+      <h2 class="font-display text-4xl mt-1 rise d1">Tudo que aconteceu enquanto você dormia.</h2>
+      <p class="mt-2 rise d2" style="color: var(--ink-2);">
+        Painel lateral aparece via botão no topbar. Agrupado por dia, com chip "novo" e ações inline.
+      </p>
+
+      <div class="mt-8 card-soft p-5 rise d3">
+        <div class="eyebrow">Configurações de notificação</div>
+        <div class="mt-4 space-y-3 text-sm">
+          <div class="flex items-center justify-between">
+            <span>Tarefa submetida (parent)</span>
+            <span class="check on"></span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>Tarefa aprovada (child)</span>
+            <span class="check on"></span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>Level up</span>
+            <span class="check on"></span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>Streak em risco (lembrete)</span>
+            <span class="check on"></span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>Nova recompensa adicionada</span>
+            <span class="check"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Drawer mock -->
+    <div class="card-soft p-6 max-h-[600px] overflow-y-auto" style="border-radius: 24px;">
+      <div class="flex items-center justify-between">
+        <div class="font-display text-2xl">🔔 Notificações</div>
+        <button class="text-xs underline" style="color: var(--ink-2);">marcar todas como lidas</button>
+      </div>
+
+      <div class="eyebrow mt-6">Hoje</div>
+      <div class="mt-2 space-y-2">
+        <div class="card-soft p-4 flex items-start gap-3" style="background: linear-gradient(90deg, rgba(255,107,71,0.06), transparent);">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style="background: var(--bg-2);">✅</div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">Sua task foi aprovada!</div>
+            <div class="text-xs" style="color: var(--ink-2);">"Tirar lixo" · +30 XP · há 5 min</div>
+            <div class="flex gap-2 mt-2">
+              <button class="text-xs font-semibold" style="color: var(--sunset);">Ver detalhe</button>
+            </div>
+          </div>
+          <span class="chip pill-sunset">novo</span>
+        </div>
+        <div class="card-soft p-4 flex items-start gap-3">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style="background: var(--bg-2);">🔥</div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">Seu streak chegou a 14 dias!</div>
+            <div class="text-xs" style="color: var(--ink-2);">Continue assim · bônus em 6 dias</div>
+          </div>
+          <span class="chip pill-honey">novo</span>
+        </div>
+        <div class="card-soft p-4 flex items-start gap-3">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style="background: var(--bg-2);">🎁</div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">Mãe adicionou recompensa nova</div>
+            <div class="text-xs" style="color: var(--ink-2);">"Cinema" por 800 XP · há 2h</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="eyebrow mt-6">Ontem</div>
+      <div class="mt-2 space-y-2">
+        <div class="card-soft p-4 flex items-start gap-3">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style="background: var(--bg-2);">⭐</div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">Level up! L6 → L7</div>
+            <div class="text-xs" style="color: var(--ink-2);">Nova badge: Streak Warrior</div>
+          </div>
+        </div>
+        <div class="card-soft p-4 flex items-start gap-3">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style="background: var(--bg-2);">📋</div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">Pai atribuiu nova task</div>
+            <div class="text-xs" style="color: var(--ink-2);">"Arrumar quarto" · +60 XP · easy</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: SETTINGS                                -->
+<!-- ============================================== -->
+<section id="settings" class="screen">
+  <div class="eyebrow rise">Settings</div>
+  <h2 class="font-display text-4xl mt-1 rise d1">Configurações</h2>
+
+  <div class="grid lg:grid-cols-4 gap-6 mt-8">
+    <!-- Sidebar -->
+    <aside class="card-soft p-4 h-fit">
+      <div class="space-y-1 text-sm">
+        <a class="block px-3 py-2 rounded-xl font-semibold" style="background: linear-gradient(90deg, rgba(255,107,71,0.1), transparent);">👤 Perfil</a>
+        <a class="block px-3 py-2 rounded-xl cursor-pointer">🎨 Aparência</a>
+        <a class="block px-3 py-2 rounded-xl cursor-pointer">🔔 Notificações</a>
+        <a class="block px-3 py-2 rounded-xl cursor-pointer">👨‍👩‍👧 Família</a>
+        <a class="block px-3 py-2 rounded-xl cursor-pointer">🎁 Recompensas</a>
+        <a class="block px-3 py-2 rounded-xl cursor-pointer">🔒 Segurança</a>
+        <a class="block px-3 py-2 rounded-xl cursor-pointer" style="color: var(--berry);">🚪 Sair</a>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="lg:col-span-3 space-y-4">
+      <div class="card-soft p-6">
+        <div class="eyebrow">Avatar e identidade</div>
+        <div class="flex items-center gap-5 mt-4">
+          <span class="avatar w-20 h-20 text-2xl" style="background: linear-gradient(135deg, #FF6B47, #E94560); border-radius: 24px;">M</span>
+          <div>
+            <button class="btn-ghost rounded-xl px-4 py-2 text-sm font-semibold">Trocar avatar</button>
+            <div class="text-xs mt-2" style="color: var(--ink-2);">PNG, JPG, max 2MB · ou escolha emoji</div>
+          </div>
+        </div>
+        <div class="grid md:grid-cols-2 gap-4 mt-5">
+          <div>
+            <label class="eyebrow">Nome</label>
+            <input value="Manu Silva" class="w-full mt-2 px-4 py-3 rounded-2xl bg-transparent" style="border: 2px solid var(--line);"/>
+          </div>
+          <div>
+            <label class="eyebrow">E-mail</label>
+            <input value="manu@silva.com" class="w-full mt-2 px-4 py-3 rounded-2xl bg-transparent" style="border: 2px solid var(--line);"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-soft p-6">
+        <div class="eyebrow">Aparência</div>
+        <div class="mt-4 grid md:grid-cols-3 gap-3">
+          <button class="card-soft p-4 text-left lift" style="outline: 2px solid var(--sunset); outline-offset:-1px;">
+            <div class="h-16 rounded-lg" style="background: linear-gradient(135deg, #FFF8F0, #FFEFD8);"></div>
+            <div class="font-display text-base mt-2">Cozy</div>
+            <div class="text-xs" style="color: var(--ink-2);">padrão · warm</div>
+          </button>
+          <button class="card-soft p-4 text-left lift">
+            <div class="h-16 rounded-lg" style="background: linear-gradient(135deg, #14110F, #1F1A16);"></div>
+            <div class="font-display text-base mt-2">Dark Quest</div>
+            <div class="text-xs" style="color: var(--ink-2);">modo escuro</div>
+          </button>
+          <button class="card-soft p-4 text-left lift">
+            <div class="h-16 rounded-lg" style="background: linear-gradient(135deg, #FFE3F1, #FFD4FF);"></div>
+            <div class="font-display text-base mt-2">Candy</div>
+            <div class="text-xs" style="color: var(--ink-2);">extra playful</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="card-soft p-6">
+        <div class="eyebrow">Sons & efeitos</div>
+        <div class="mt-4 space-y-3 text-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-semibold">Som ao aprovar task</div>
+              <div class="text-xs" style="color: var(--ink-2);">Coin sound 🪙</div>
+            </div>
+            <span class="check on"></span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-semibold">Confete em level up</div>
+              <div class="text-xs" style="color: var(--ink-2);">Visual celebration</div>
+            </div>
+            <span class="check on"></span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="font-semibold">Vibração no celular</div>
+              <div class="text-xs" style="color: var(--ink-2);">Mobile apenas</div>
+            </div>
+            <span class="check"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: STATES (empty, loading, error)          -->
+<!-- ============================================== -->
+<section id="states" class="screen">
+  <div class="eyebrow rise">Estados de UI</div>
+  <h2 class="font-display text-4xl mt-1 rise d1">Empty · Loading · Error · Success</h2>
+  <p class="mt-2 rise d2" style="color: var(--ink-2);">Toda lista, fetch e ação tem 4 estados. Padronizar reduz reinventar.</p>
+
+  <div class="grid md:grid-cols-2 gap-4 mt-8">
+    <!-- EMPTY -->
+    <div class="card-soft p-8 text-center">
+      <div class="eyebrow" style="color: var(--leaf);">Empty</div>
+      <div class="text-7xl mt-4">🌱</div>
+      <div class="font-display text-2xl mt-4">Nenhuma task hoje</div>
+      <div class="text-sm mt-2 max-w-xs mx-auto" style="color: var(--ink-2);">Aproveita pra descansar. Ou peça uma quest pro seu parent.</div>
+      <button class="btn-ghost rounded-xl px-5 py-2.5 mt-5 text-sm font-semibold">Pedir tarefa</button>
+    </div>
+
+    <!-- LOADING -->
+    <div class="card-soft p-8">
+      <div class="eyebrow">Loading skeleton</div>
+      <div class="mt-5 space-y-3">
+        <div class="h-4 rounded-lg" style="background: linear-gradient(90deg, var(--bg-2), var(--line), var(--bg-2)); background-size: 200% 100%; animation: shimmer 1.5s infinite;"></div>
+        <div class="h-4 rounded-lg w-4/5" style="background: linear-gradient(90deg, var(--bg-2), var(--line), var(--bg-2)); background-size: 200% 100%; animation: shimmer 1.5s infinite;"></div>
+        <div class="h-32 rounded-2xl mt-5" style="background: linear-gradient(90deg, var(--bg-2), var(--line), var(--bg-2)); background-size: 200% 100%; animation: shimmer 1.5s infinite;"></div>
+        <div class="h-4 rounded-lg w-3/5" style="background: linear-gradient(90deg, var(--bg-2), var(--line), var(--bg-2)); background-size: 200% 100%; animation: shimmer 1.5s infinite;"></div>
+      </div>
+    </div>
+
+    <!-- ERROR -->
+    <div class="card-soft p-8 text-center">
+      <div class="eyebrow" style="color: var(--berry);">Error</div>
+      <div class="text-7xl mt-4">🥹</div>
+      <div class="font-display text-2xl mt-4">Ops, algo deu errado</div>
+      <div class="text-sm mt-2 max-w-xs mx-auto" style="color: var(--ink-2);">Não conseguimos carregar suas tarefas. Tente novamente — não é culpa sua.</div>
+      <div class="text-[10px] font-mono mt-4 px-3 py-1 rounded-md inline-block" style="background: var(--bg-2); color: var(--ink-2);">code: NETWORK_TIMEOUT</div>
+      <div class="mt-5">
+        <button class="btn-primary rounded-xl px-5 py-2.5 text-sm font-semibold">Tentar novamente ↻</button>
+      </div>
+    </div>
+
+    <!-- SUCCESS TOAST -->
+    <div class="card-soft p-8">
+      <div class="eyebrow" style="color: var(--leaf);">Success toast</div>
+      <div class="mt-5 space-y-3">
+        <div class="card-soft p-4 flex items-center gap-3" style="background: linear-gradient(135deg, #DEEFD0, #C2DFAB); border-color: #7FB069;">
+          <div class="text-2xl">✅</div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">Task aprovada!</div>
+            <div class="text-xs">+30 XP creditado pra Manu</div>
+          </div>
+        </div>
+        <div class="card-soft p-4 flex items-center gap-3" style="background: linear-gradient(135deg, #FFE7DC, #FFD3C2); border-color: #FF6B47;">
+          <div class="text-2xl">🎁</div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">Recompensa resgatada</div>
+            <div class="text-xs">Pizza sexta · -500 XP</div>
+          </div>
+        </div>
+        <div class="card-soft p-4 flex items-center gap-3" style="background: linear-gradient(135deg, #FFD9E2, #FFB5C7); border-color: #E94560;">
+          <div class="text-2xl">⚠️</div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">XP insuficiente</div>
+            <div class="text-xs">Faltam 260 XP pra "Cinema"</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  </style>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: MOBILE MOCKUPS                          -->
+<!-- ============================================== -->
+<section id="mobile" class="screen">
+  <div class="text-center">
+    <div class="eyebrow rise">📱 Mobile</div>
+    <h2 class="font-display text-4xl mt-1 rise d1">Mobile-first, sempre.</h2>
+    <p class="mt-2 max-w-2xl mx-auto rise d2" style="color: var(--ink-2);">
+      Maioria dos children acessa via celular. Layout collapse, bottom nav, touch targets generosos.
+    </p>
+  </div>
+
+  <div class="flex flex-wrap justify-center gap-8 mt-12">
+    <!-- Phone 1: Dashboard -->
+    <div class="phone rise d3">
+      <div class="px-5 pt-6 pb-3 flex items-center justify-between" style="background: linear-gradient(180deg, var(--bg-2), transparent);">
+        <span class="avatar w-8 h-8 text-xs" style="background: linear-gradient(135deg, #FF6B47, #E94560);">M</span>
+        <div class="font-display text-base">Olá Manu</div>
+        <button class="text-lg">🔔</button>
+      </div>
+      <div class="px-5 pb-4">
+        <div class="card-soft p-4 mt-2">
+          <div class="eyebrow">XP</div>
+          <div class="font-display text-3xl mt-1">L7</div>
+          <div class="h-2 rounded-full mt-2" style="background: var(--bg-2);">
+            <div class="h-full rounded-full xp-fill" style="--w: 62%; background: linear-gradient(90deg, #FFB627, #FF6B47);"></div>
+          </div>
+          <div class="font-mono text-xs mt-2" style="color: var(--ink-2);">1.240 / 2.000</div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 mt-3">
+          <div class="card-soft p-3 flex items-center gap-2">
+            <div class="flame"><svg width="22" height="28" viewBox="0 0 34 44"><path d="M17 4 C8 14, 6 24, 6 30 a11 11 0 0 0 22 0 c0-6-3-11-11-26z" fill="#FF6B47"/></svg></div>
+            <div>
+              <div class="font-display text-lg">14d</div>
+              <div class="text-[10px]" style="color: var(--ink-2);">streak</div>
+            </div>
+          </div>
+          <div class="card-soft p-3">
+            <div class="font-display text-lg">3</div>
+            <div class="text-[10px]" style="color: var(--ink-2);">tasks hoje</div>
+          </div>
+        </div>
+
+        <div class="eyebrow mt-5">Pendentes</div>
+        <div class="card-soft p-3 mt-2">
+          <div class="flex items-center justify-between">
+            <span class="chip pill-leaf text-[9px]">🎯 To Do</span>
+            <span class="font-mono text-xs">+45</span>
+          </div>
+          <div class="font-display text-base mt-1">🍽️ Lavar louça</div>
+        </div>
+        <div class="card-soft p-3 mt-2">
+          <div class="flex items-center justify-between">
+            <span class="chip pill-honey text-[9px]">🔨 In Progress</span>
+            <span class="font-mono text-xs">+80</span>
+          </div>
+          <div class="font-display text-base mt-1">📚 Matemática 30min</div>
+        </div>
+      </div>
+      <!-- Bottom nav -->
+      <div class="border-t flex" style="border-color: var(--line); background: var(--paper);">
+        <button class="flex-1 py-3 text-center" style="border-top: 3px solid var(--sunset);">
+          <div class="text-lg">🏠</div>
+          <div class="text-[9px] font-semibold">Home</div>
+        </button>
+        <button class="flex-1 py-3 text-center" style="color: var(--ink-2);">
+          <div class="text-lg">📋</div>
+          <div class="text-[9px]">Tasks</div>
+        </button>
+        <button class="flex-1 py-3 text-center" style="color: var(--ink-2);">
+          <div class="text-lg">🎁</div>
+          <div class="text-[9px]">Loja</div>
+        </button>
+        <button class="flex-1 py-3 text-center" style="color: var(--ink-2);">
+          <div class="text-lg">🏆</div>
+          <div class="text-[9px]">Rank</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Phone 2: Tasks -->
+    <div class="phone rise d4">
+      <div class="px-5 pt-6 pb-3">
+        <div class="flex items-center justify-between">
+          <button class="text-lg">←</button>
+          <div class="font-display text-base">Tasks</div>
+          <button class="text-lg">＋</button>
+        </div>
+        <div class="flex gap-1 mt-4 overflow-x-auto">
+          <span class="chip pill-ink whitespace-nowrap text-[9px]">Tudo 12</span>
+          <span class="chip whitespace-nowrap text-[9px]" style="background: var(--paper); border:1px solid var(--line);">📝 3</span>
+          <span class="chip whitespace-nowrap text-[9px]" style="background: var(--paper); border:1px solid var(--line);">🔨 2</span>
+          <span class="chip whitespace-nowrap text-[9px]" style="background: var(--paper); border:1px solid var(--line);">👀 2</span>
+        </div>
+      </div>
+      <div class="px-5 pb-6">
+        <div class="eyebrow text-[9px]">🔨 In Progress</div>
+        <div class="card-soft p-3 mt-2">
+          <div class="font-display text-base">📚 Matemática</div>
+          <div class="flex items-center justify-between mt-2 text-xs">
+            <span class="chip pill-berry text-[9px]">🔴 Hard</span>
+            <span class="font-mono">+80 XP</span>
+          </div>
+        </div>
+        <div class="eyebrow text-[9px] mt-4">🎯 To Do</div>
+        <div class="card-soft p-3 mt-2">
+          <div class="font-display text-base">🍽️ Lavar louça</div>
+          <div class="flex items-center justify-between mt-2 text-xs">
+            <span class="chip pill-leaf text-[9px]">🟢 Easy</span>
+            <span class="font-mono">+45 XP</span>
+          </div>
+          <button class="w-full mt-3 rounded-xl py-2 text-xs font-semibold" style="background: linear-gradient(180deg, #FF8866, #FF6B47); color: white;">Começar agora →</button>
+        </div>
+        <div class="card-soft p-3 mt-2">
+          <div class="font-display text-base">🛏️ Arrumar quarto</div>
+          <div class="flex items-center justify-between mt-2 text-xs">
+            <span class="chip pill-honey text-[9px]">🟡 Medium</span>
+            <span class="font-mono">+60 XP</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phone 3: Reward redeem -->
+    <div class="phone rise d4">
+      <div class="px-5 pt-6 pb-3 flex items-center justify-between">
+        <button class="text-lg">←</button>
+        <div class="font-display text-base">Loja</div>
+        <div class="font-mono text-xs" style="color: var(--sunset);">1.240 XP</div>
+      </div>
+      <div class="px-5 pb-6 space-y-3">
+        <div class="card-soft p-4 relative overflow-hidden">
+          <div class="absolute -top-4 -right-4 w-20 h-20 rounded-full opacity-20" style="background: var(--sunset);"></div>
+          <div class="text-3xl relative">🍕</div>
+          <div class="font-display text-lg mt-2 relative">Pizza sexta</div>
+          <div class="flex items-center justify-between mt-3 relative">
+            <div class="font-display text-xl">500 <span class="text-xs font-mono">XP</span></div>
+            <button class="btn-primary rounded-xl px-4 py-1.5 text-xs font-semibold">Resgatar</button>
+          </div>
+        </div>
+        <div class="card-soft p-4 relative overflow-hidden">
+          <div class="absolute -top-4 -right-4 w-20 h-20 rounded-full opacity-20" style="background: var(--berry);"></div>
+          <div class="text-3xl relative">🎮</div>
+          <div class="font-display text-lg mt-2 relative">30min vídeo-game</div>
+          <div class="flex items-center justify-between mt-3 relative">
+            <div class="font-display text-xl">100 <span class="text-xs font-mono">XP</span></div>
+            <button class="btn-primary rounded-xl px-4 py-1.5 text-xs font-semibold">Resgatar</button>
+          </div>
+        </div>
+        <div class="card-soft p-4 relative overflow-hidden" style="opacity: 0.5;">
+          <div class="text-3xl">🛍️</div>
+          <div class="font-display text-lg mt-2">R$ 20 mesada</div>
+          <div class="flex items-center justify-between mt-3">
+            <div class="font-display text-xl">1.500 <span class="text-xs font-mono">XP</span></div>
+            <span class="text-[9px] font-semibold">Faltam 260</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phone 4: Approval (parent) -->
+    <div class="phone rise d2">
+      <div class="px-5 pt-6 pb-3" style="background: linear-gradient(180deg, rgba(107,63,115,0.1), transparent);">
+        <div class="flex items-center justify-between">
+          <button class="text-lg">←</button>
+          <div class="font-display text-base">Aprovações</div>
+          <div class="font-mono text-xs px-2 py-0.5 rounded-full" style="background: var(--berry); color: white;">5</div>
+        </div>
+      </div>
+      <div class="px-5 pb-4 space-y-3">
+        <div class="card-soft p-3">
+          <div class="flex items-center gap-2">
+            <span class="avatar w-7 h-7 text-[10px]" style="background: linear-gradient(135deg, #FF6B47, #E94560);">M</span>
+            <div class="flex-1">
+              <div class="text-xs font-semibold">Manu · há 2h</div>
+              <div class="font-display text-sm">🗑️ Tirar lixo</div>
+            </div>
+            <span class="font-mono text-xs">+30</span>
+          </div>
+          <div class="grid grid-cols-2 gap-1 mt-2">
+            <button class="rounded-lg py-1.5 text-[10px] font-semibold" style="background: linear-gradient(180deg, #98D17F, #5C8C44); color: white;">✓ Aprovar</button>
+            <button class="rounded-lg py-1.5 text-[10px] font-semibold" style="background: transparent; color: var(--berry); border: 1.5px solid var(--berry);">✕ Rejeitar</button>
+          </div>
+        </div>
+        <div class="card-soft p-3">
+          <div class="flex items-center gap-2">
+            <span class="avatar w-7 h-7 text-[10px]" style="background: linear-gradient(135deg, #FFB627, #FF8C42);">P</span>
+            <div class="flex-1">
+              <div class="text-xs font-semibold">Pedro · há 4h</div>
+              <div class="font-display text-sm">🧦 Organizar armário</div>
+            </div>
+            <span class="font-mono text-xs">+70</span>
+          </div>
+          <div class="grid grid-cols-2 gap-1 mt-2">
+            <button class="rounded-lg py-1.5 text-[10px] font-semibold" style="background: linear-gradient(180deg, #98D17F, #5C8C44); color: white;">✓ Aprovar</button>
+            <button class="rounded-lg py-1.5 text-[10px] font-semibold" style="background: transparent; color: var(--berry); border: 1.5px solid var(--berry);">✕ Rejeitar</button>
+          </div>
+        </div>
+        <button class="w-full rounded-xl py-2 text-xs font-semibold mt-2" style="background: var(--ink); color: var(--bg);">⚡ Aprovar todas (5)</button>
+      </div>
+    </div>
+
+    <!-- Phone 5: Ranking mobile -->
+    <div class="phone rise d3">
+      <div class="px-5 pt-6 pb-3 ribbon-bg">
+        <div class="flex items-center justify-between">
+          <button class="text-lg">←</button>
+          <div class="font-display text-base">🏆 Ranking</div>
+          <button class="text-lg">⋯</button>
+        </div>
+        <div class="text-center mt-3">
+          <div class="text-3xl">👑</div>
+          <div class="font-display text-2xl">Manu</div>
+          <div class="font-mono text-xs" style="color: var(--ink-2);">1.240 XP · L7</div>
+        </div>
+      </div>
+      <div class="px-5 pb-4 space-y-2">
+        <div class="flex items-center gap-2 p-2 rounded-xl" style="background: linear-gradient(90deg, rgba(255,107,71,0.1), transparent);">
+          <span class="font-display text-base w-5 text-center">1</span>
+          <span class="avatar w-6 h-6 text-[10px]" style="background: linear-gradient(135deg, #FF6B47, #E94560);">M</span>
+          <div class="flex-1 text-xs"><strong>Manu</strong> <span class="chip pill-sunset text-[8px] ml-1">você</span></div>
+          <span class="font-mono text-xs">1.240</span>
+        </div>
+        <div class="flex items-center gap-2 p-2">
+          <span class="font-display text-base w-5 text-center" style="color: var(--ink-2);">2</span>
+          <span class="avatar w-6 h-6 text-[10px]" style="background: linear-gradient(135deg, #FFB627, #FF8C42);">P</span>
+          <div class="flex-1 text-xs">Pedro</div>
+          <span class="font-mono text-xs">980</span>
+        </div>
+        <div class="flex items-center gap-2 p-2">
+          <span class="font-display text-base w-5 text-center" style="color: var(--ink-2);">3</span>
+          <span class="avatar w-6 h-6 text-[10px]" style="background: linear-gradient(135deg, #7FB069, #4F86C6);">B</span>
+          <div class="flex-1 text-xs">Bia</div>
+          <span class="font-mono text-xs">820</span>
+        </div>
+        <div class="flex items-center gap-2 p-2">
+          <span class="font-display text-base w-5 text-center" style="color: var(--ink-2);">4</span>
+          <span class="avatar w-6 h-6 text-[10px]" style="background: linear-gradient(135deg, #6B3F73, #4A2A52);">M</span>
+          <div class="flex-1 text-xs">Maria</div>
+          <span class="font-mono text-xs">640</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phone 6: Profile (mobile) -->
+    <div class="phone rise d4">
+      <div class="px-5 pt-6 pb-3 text-center ribbon-bg">
+        <span class="avatar w-16 h-16 text-xl mx-auto" style="background: linear-gradient(135deg, #FF6B47, #E94560); border-radius: 20px; display: inline-flex;">M</span>
+        <div class="font-display text-xl mt-2">Manu</div>
+        <div class="text-xs font-mono" style="color: var(--ink-2);">L7 · 1.240 XP · 🔥 14d</div>
+      </div>
+      <div class="px-5 pb-4">
+        <div class="grid grid-cols-3 gap-1 mt-3 text-center">
+          <div class="card-soft p-2">
+            <div class="font-display text-lg">47</div>
+            <div class="text-[9px]">tasks</div>
+          </div>
+          <div class="card-soft p-2">
+            <div class="font-display text-lg">8</div>
+            <div class="text-[9px]">badges</div>
+          </div>
+          <div class="card-soft p-2">
+            <div class="font-display text-lg">1º</div>
+            <div class="text-[9px]">rank</div>
+          </div>
+        </div>
+        <div class="eyebrow mt-4 text-[9px]">Badges</div>
+        <div class="flex gap-1 mt-2 overflow-x-auto">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-base flex-shrink-0" style="background: linear-gradient(135deg, #FFB627, #E94560);">🏆</div>
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-base flex-shrink-0" style="background: linear-gradient(135deg, #7FB069, #5C8C44);">💎</div>
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-base flex-shrink-0" style="background: linear-gradient(135deg, #FF6B47, #E94560);">🚀</div>
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-base flex-shrink-0" style="background: linear-gradient(135deg, #4F86C6, #2E5C9E);">🤝</div>
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-base flex-shrink-0" style="background: var(--bg-2);">🔒</div>
+        </div>
+        <button class="w-full rounded-xl py-2 text-xs font-semibold mt-4" style="background: var(--ink); color: var(--bg);">⚙️ Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile bottom sheet examples -->
+  <div class="mt-16">
+    <div class="eyebrow text-center">Bottom sheets · padrão mobile</div>
+    <div class="grid md:grid-cols-2 gap-8 mt-6 max-w-3xl mx-auto">
+      <div class="phone">
+        <div class="px-5 pt-6 pb-3" style="opacity: 0.4;">
+          <div class="font-display text-lg">Dashboard</div>
+          <div class="card-soft p-3 mt-2"></div>
+        </div>
+        <div class="border-t-2" style="border-color: var(--sunset); background: var(--paper);">
+          <div class="w-12 h-1 rounded-full mx-auto mt-2" style="background: var(--ink-2); opacity: 0.3;"></div>
+          <div class="p-5">
+            <div class="font-display text-lg">Submeter tarefa</div>
+            <div class="text-xs mt-1" style="color: var(--ink-2);">"Lavar louça do jantar"</div>
+            <textarea class="w-full mt-3 px-3 py-2 rounded-xl bg-transparent text-xs h-16" style="border: 2px solid var(--line);" placeholder="Conta como foi…"></textarea>
+            <button class="btn-primary rounded-xl w-full mt-3 py-2 text-xs font-semibold">Enviar pra aprovação</button>
+          </div>
+        </div>
+      </div>
+      <div class="phone">
+        <div class="px-5 pt-6 pb-3" style="opacity: 0.4;">
+          <div class="font-display text-lg">Loja</div>
+          <div class="card-soft p-3 mt-2"></div>
+        </div>
+        <div class="border-t-2" style="border-color: var(--berry); background: var(--paper);">
+          <div class="w-12 h-1 rounded-full mx-auto mt-2" style="background: var(--ink-2); opacity: 0.3;"></div>
+          <div class="p-5 text-center">
+            <div class="text-4xl">🍕</div>
+            <div class="font-display text-lg mt-2">Resgatar Pizza sexta?</div>
+            <div class="font-mono text-xs mt-1" style="color: var(--ink-2);">Custo: 500 XP</div>
+            <div class="grid grid-cols-2 gap-2 mt-4">
+              <button class="rounded-xl py-2 text-xs font-semibold" style="background: var(--paper); border: 1px solid var(--line);">Cancelar</button>
+              <button class="btn-primary rounded-xl py-2 text-xs font-semibold">Confirmar ✨</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: USER FLOWS                              -->
+<!-- ============================================== -->
+<section id="flows" class="screen">
+  <div class="eyebrow rise">User flows</div>
+  <h2 class="font-display text-4xl mt-1 rise d1">Como tudo se conecta.</h2>
+  <p class="mt-2 max-w-2xl rise d2" style="color: var(--ink-2);">
+    4 fluxos principais cobrem ~90% dos casos de uso. Resto é configuração.
+  </p>
+
+  <!-- Flow 1: Child completes task -->
+  <div class="mt-10 card-soft p-8">
+    <div class="eyebrow">Fluxo 1 · Child completa tarefa</div>
+    <h3 class="font-display text-2xl mt-1">Da quest até o XP no bolso</h3>
+    <div class="flex items-stretch flex-wrap gap-3 mt-6">
+      <FlowStep n="1" emoji="📋" t="Vê task" s="Dashboard mostra task atribuída"></FlowStep>
+      <FlowArrow></FlowArrow>
+      <FlowStep n="2" emoji="✏️" t="Aceita" s="Status muda pra In Progress"></FlowStep>
+      <FlowArrow></FlowArrow>
+      <FlowStep n="3" emoji="🧹" t="Executa" s="Faz a tarefa real"></FlowStep>
+      <FlowArrow></FlowArrow>
+      <FlowStep n="4" emoji="✅" t="Submete" s="Click 'Marcar como feita'"></FlowStep>
+      <FlowArrow></FlowArrow>
+      <FlowStep n="5" emoji="⏳" t="Aguarda" s="Parent recebe notificação"></FlowStep>
+      <FlowArrow></FlowArrow>
+      <FlowStep n="6" emoji="🎉" t="Aprovado!" s="+XP creditado · ⭐ celebra"></FlowStep>
+    </div>
+  </div>
+
+  <!-- Flow 2: Parent reviews -->
+  <div class="mt-6 card-soft p-8">
+    <div class="eyebrow">Fluxo 2 · Parent aprova</div>
+    <h3 class="font-display text-2xl mt-1">Fila → revisão → credit em segundos</h3>
+    <div class="flex items-stretch flex-wrap gap-3 mt-6">
+      <FlowStep n="1" emoji="🔔" t="Notificação" s="Push: 'Manu submeteu task'"></FlowStep>
+      <FlowArrow></FlowArrow>
+      <FlowStep n="2" emoji="⚖️" t="Approval Queue" s="Ver fila com 5 tarefas"></FlowStep>
+      <FlowArrow></FlowArrow>
+      <FlowStep n="3" emoji="🔍" t="Revisa" s="Lê nota da criança"></FlowStep>
+      <FlowArrow></FlowArrow>
+      <FlowStep n="4" emoji="✅" t="Aprova" s="ou rejeita c/ razão"></FlowStep>
+      <FlowArrow></FlowArrow>
+      <FlowStep n="5" emoji="🚀" t="XP credita" s="Em transação (atomic)"></FlowStep>
+    </div>
+  </div>
+
+  <!-- Flow 3: Redeem reward -->
+  <div class="mt-6 card-soft p-8">
+    <div class="eyebrow">Fluxo 3 · Resgate de recompensa</div>
+    <h3 class="font-display text-2xl mt-1">XP suado → coisa real</h3>
+    <div class="flex items-stretch flex-wrap gap-3 mt-6">
+      <FlowStep n="1" emoji="🎁" t="Loja" s="Browse catálogo"></FlowStep>
+      <FlowArrow></FlowArrow>
+      <FlowStep n="2" emoji="🛒" t="Escolhe" s="Click 'Resgatar'"></FlowStep>
+      <FlowArrow></FlowArrow>
+      <FlowStep n="3" emoji="⚠️" t="Confirma" s="Dialog: 'tem certeza?'"></FlowStep>
+      <FlowArrow></FlowArrow>
+      <FlowStep n="4" emoji="💸" t="XP debita" s="Estoque -1, redemption ok"></FlowStep>
+      <FlowArrow></FlowArrow>
+      <FlowStep n="5" emoji="🎊" t="Parent vê" s="Sabe entregar a recompensa"></FlowStep>
+    </div>
+  </div>
+
+  <!-- Flow 4: Onboarding -->
+  <div class="mt-6 card-soft p-8">
+    <div class="eyebrow">Fluxo 4 · Onboarding</div>
+    <h3 class="font-display text-2xl mt-1">Família nova em &lt; 5 min</h3>
+    <div class="flex items-stretch flex-wrap gap-3 mt-6">
+      <FlowStep n="1" emoji="🚪" t="Sign up" s="Parent cria conta"></FlowStep>
+      <FlowArrow></FlowArrow>
+      <FlowStep n="2" emoji="🏷️" t="Nomeia família" s="+ emoji + categorias"></FlowStep>
+      <FlowArrow></FlowArrow>
+      <FlowStep n="3" emoji="✏️" t="1ª task demo" s="Auto-sugestão por categoria"></FlowStep>
+      <FlowArrow></FlowArrow>
+      <FlowStep n="4" emoji="📨" t="Convida" s="Link mágico por email"></FlowStep>
+      <FlowArrow></FlowArrow>
+      <FlowStep n="5" emoji="🎮" t="Child entra" s="Ganha 10 XP de boas-vindas"></FlowStep>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="mt-10">
+    <div class="eyebrow">Métricas-chave (north star)</div>
+    <div class="grid md:grid-cols-4 gap-4 mt-3">
+      <div class="card-soft p-5">
+        <div class="font-display text-3xl">DAU</div>
+        <div class="text-xs mt-1" style="color: var(--ink-2);">% família ativa por dia</div>
+      </div>
+      <div class="card-soft p-5">
+        <div class="font-display text-3xl">TTV</div>
+        <div class="text-xs mt-1" style="color: var(--ink-2);">Tempo até 1ª task aprovada</div>
+      </div>
+      <div class="card-soft p-5">
+        <div class="font-display text-3xl">D7</div>
+        <div class="text-xs mt-1" style="color: var(--ink-2);">Retenção 7 dias</div>
+      </div>
+      <div class="card-soft p-5">
+        <div class="font-display text-3xl">Streak</div>
+        <div class="text-xs mt-1" style="color: var(--ink-2);">Avg streak por user</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: TASK DETAIL                             -->
+<!-- ============================================== -->
+<section id="task-detail" class="screen">
+  <div class="flex items-center gap-3 text-sm mb-6">
+    <a class="cursor-pointer" onclick="show('tasks')" style="color: var(--ink-2);">← Tasks</a>
+    <span style="color: var(--ink-2);">/</span>
+    <span class="font-mono text-xs px-2 py-0.5 rounded" style="background: var(--bg-2);">TASK-0847</span>
+  </div>
+
+  <div class="grid lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 space-y-4">
+      <div class="card-soft p-8">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="chip pill-honey">🔨 In Progress</span>
+          <span class="chip pill-berry">🔴 Hard</span>
+          <span class="chip pill-sky">Estudo</span>
+        </div>
+        <h2 class="font-display text-4xl mt-4">📚 Estudar matemática 30min</h2>
+        <p class="mt-3" style="color: var(--ink-2);">
+          Resolver os exercícios das páginas 45-48 do livro. Foco em equações de 2º grau.
+          Tira foto do caderno como prova quando terminar.
+        </p>
+
+        <div class="grid grid-cols-3 gap-3 mt-7">
+          <div class="card-soft p-4">
+            <div class="eyebrow">XP base</div>
+            <div class="font-display text-2xl mt-1">80</div>
+          </div>
+          <div class="card-soft p-4">
+            <div class="eyebrow">× Multiplier</div>
+            <div class="font-display text-2xl mt-1">2.0x</div>
+          </div>
+          <div class="card-soft p-4">
+            <div class="eyebrow">Total ao aprovar</div>
+            <div class="font-display text-2xl mt-1" style="color: var(--leaf);">+160</div>
+          </div>
+        </div>
+
+        <div class="mt-7">
+          <div class="eyebrow">Submissão</div>
+          <textarea class="w-full mt-2 px-4 py-3 rounded-2xl bg-transparent text-sm h-24" style="border: 2px solid var(--line);" placeholder="Conta o que você fez (opcional mas ajuda na aprovação)…"></textarea>
+          <div class="flex items-center gap-2 mt-3 flex-wrap">
+            <button class="btn-ghost rounded-xl px-3 py-2 text-xs">📎 Anexar foto</button>
+            <button class="btn-ghost rounded-xl px-3 py-2 text-xs">🎙️ Áudio</button>
+            <div class="ml-auto"></div>
+            <button class="btn-primary rounded-xl px-5 py-2 text-sm font-semibold">Marcar como feita ✓</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- History timeline -->
+      <div class="card-soft p-6">
+        <div class="eyebrow">Histórico</div>
+        <div class="mt-4 relative">
+          <div class="absolute left-3 top-2 bottom-2 w-0.5" style="background: var(--line);"></div>
+          <div class="relative flex gap-4 pb-4">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs z-10" style="background: var(--honey); color: white;">▶</div>
+            <div>
+              <div class="font-semibold text-sm">Manu começou a task</div>
+              <div class="text-xs font-mono mt-0.5" style="color: var(--ink-2);">há 15min · status → In Progress</div>
+            </div>
+          </div>
+          <div class="relative flex gap-4 pb-4">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs z-10" style="background: var(--sunset); color: white;">→</div>
+            <div>
+              <div class="font-semibold text-sm">Maria atribuiu pra Manu</div>
+              <div class="text-xs font-mono mt-0.5" style="color: var(--ink-2);">2h atrás · assignee = Manu</div>
+            </div>
+          </div>
+          <div class="relative flex gap-4">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs z-10" style="background: var(--plum); color: white;">+</div>
+            <div>
+              <div class="font-semibold text-sm">Maria criou a task</div>
+              <div class="text-xs font-mono mt-0.5" style="color: var(--ink-2);">2h atrás · 80 XP base, Hard</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comments -->
+      <div class="card-soft p-6">
+        <div class="eyebrow">Comentários (2)</div>
+        <div class="mt-4 space-y-3">
+          <div class="flex gap-3">
+            <span class="avatar w-9 h-9 text-xs" style="background: linear-gradient(135deg, #FF6B47, #E94560);">M</span>
+            <div class="flex-1 card-soft p-3" style="background: var(--bg-2);">
+              <div class="text-xs font-semibold">Maria <span class="font-mono ml-2" style="color: var(--ink-2);">parent · há 1h</span></div>
+              <div class="text-sm mt-1">Lembra de fazer com calma, não precisa correr 🤓</div>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <span class="avatar w-9 h-9 text-xs" style="background: linear-gradient(135deg, #FFB627, #FF8C42);">M</span>
+            <div class="flex-1 card-soft p-3" style="background: var(--bg-2);">
+              <div class="text-xs font-semibold">Manu <span class="font-mono ml-2" style="color: var(--ink-2);">há 12min</span></div>
+              <div class="text-sm mt-1">Boa, vou tentar! Achei a página 47 difícil</div>
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <input class="flex-1 px-3 py-2 rounded-xl bg-transparent text-sm" style="border: 2px solid var(--line);" placeholder="Escreva algo…"/>
+          <button class="btn-primary rounded-xl px-4 py-2 text-sm">Enviar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-3">
+      <div class="card-soft p-5">
+        <div class="eyebrow">Atribuída a</div>
+        <div class="flex items-center gap-3 mt-3">
+          <span class="avatar" style="background: linear-gradient(135deg, #FF6B47, #E94560);">M</span>
+          <div>
+            <div class="font-semibold">Manu</div>
+            <div class="text-xs font-mono" style="color: var(--ink-2);">child · L7</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-soft p-5">
+        <div class="eyebrow">Criada por</div>
+        <div class="flex items-center gap-3 mt-3">
+          <span class="avatar" style="background: linear-gradient(135deg, #6B3F73, #4A2A52);">M</span>
+          <div>
+            <div class="font-semibold">Maria</div>
+            <div class="text-xs font-mono" style="color: var(--ink-2);">parent</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-soft p-5">
+        <div class="eyebrow">Prazo</div>
+        <div class="font-display text-xl mt-1">Hoje · 22h</div>
+        <div class="text-xs font-mono mt-1" style="color: var(--berry);">⏰ em 4h47min</div>
+      </div>
+      <div class="card-soft p-5">
+        <div class="eyebrow">Ações</div>
+        <div class="flex flex-col gap-2 mt-3">
+          <button class="btn-ghost rounded-xl px-4 py-2 text-sm">✏️ Editar</button>
+          <button class="btn-ghost rounded-xl px-4 py-2 text-sm">🔄 Reatribuir</button>
+          <button class="rounded-xl px-4 py-2 text-sm font-semibold" style="background: transparent; color: var(--berry); border: 1.5px solid var(--berry);">🗑️ Arquivar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: BADGE GALLERY                           -->
+<!-- ============================================== -->
+<section id="badges" class="screen">
+  <div class="ribbon-bg rounded-[28px] p-8 border" style="border-color: var(--line);">
+    <div class="eyebrow rise">Conquistas</div>
+    <h2 class="font-display text-5xl mt-1 rise d1" style="line-height:0.95;">
+      Sua galeria de <span style="background: linear-gradient(120deg, var(--honey), var(--sunset)); -webkit-background-clip:text; background-clip:text; color:transparent;">badges.</span>
+    </h2>
+    <div class="flex items-center gap-3 mt-4 rise d2">
+      <span class="chip pill-leaf">✅ 8 desbloqueadas</span>
+      <span class="chip" style="background: var(--paper); border:1px solid var(--line);">🔒 14 locked</span>
+      <span class="chip pill-sunset">📊 36% completo</span>
+    </div>
+  </div>
+
+  <div class="mt-10">
+    <div class="eyebrow">🔥 Streak</div>
+    <div class="grid grid-cols-3 md:grid-cols-6 gap-4 mt-4">
+      <BadgeFull emoji="🔥" name="Primeira chama" desc="Streak de 1 dia" tone="honey" unlocked="true" date="há 14d"></BadgeFull>
+      <BadgeFull emoji="🔥🔥" name="Em chamas" desc="Streak de 7 dias" tone="sunset" unlocked="true" date="há 7d"></BadgeFull>
+      <BadgeFull emoji="🌋" name="Streak Warrior" desc="Streak de 14 dias" tone="berry" unlocked="true" date="hoje"></BadgeFull>
+      <BadgeFull emoji="💎" name="Disciplinado" desc="Streak de 30 dias" tone="sky" unlocked="false" progress="14/30"></BadgeFull>
+      <BadgeFull emoji="👑" name="Lendário" desc="Streak de 100 dias" tone="plum" unlocked="false" progress="14/100"></BadgeFull>
+      <BadgeFull emoji="🦄" name="Mítico" desc="Streak de 365 dias" tone="berry" unlocked="false" progress="14/365"></BadgeFull>
+    </div>
+  </div>
+
+  <div class="mt-8">
+    <div class="eyebrow">⭐ Níveis</div>
+    <div class="grid grid-cols-3 md:grid-cols-6 gap-4 mt-4">
+      <BadgeFull emoji="🌱" name="Iniciante" desc="Level 1" tone="leaf" unlocked="true" date="há 1m"></BadgeFull>
+      <BadgeFull emoji="🌿" name="Aventureiro" desc="Level 3" tone="leaf" unlocked="true" date="há 21d"></BadgeFull>
+      <BadgeFull emoji="🌳" name="Veterano" desc="Level 5" tone="honey" unlocked="true" date="há 14d"></BadgeFull>
+      <BadgeFull emoji="⭐" name="Estrela" desc="Level 7" tone="sunset" unlocked="true" date="ontem"></BadgeFull>
+      <BadgeFull emoji="🌟" name="Mestre" desc="Level 10" tone="berry" unlocked="false" progress="L7/L10"></BadgeFull>
+      <BadgeFull emoji="✨" name="Grão-mestre" desc="Level 20" tone="plum" unlocked="false" progress="L7/L20"></BadgeFull>
+    </div>
+  </div>
+
+  <div class="mt-8">
+    <div class="eyebrow">🎯 Conquistas especiais</div>
+    <div class="grid grid-cols-3 md:grid-cols-6 gap-4 mt-4">
+      <BadgeFull emoji="🚀" name="Primeira aprovação" desc="Sua 1ª task aprovada" tone="sunset" unlocked="true" date="há 1m"></BadgeFull>
+      <BadgeFull emoji="🤝" name="Helper" desc="Ajudou irmão 5x" tone="leaf" unlocked="true" date="há 9d"></BadgeFull>
+      <BadgeFull emoji="💎" name="Mil pontos" desc="Acumulou 1.000 XP" tone="sky" unlocked="true" date="há 5d"></BadgeFull>
+      <BadgeFull emoji="🏆" name="Campeão semanal" desc="1º no ranking 3x seguidas" tone="honey" unlocked="false" progress="2/3"></BadgeFull>
+      <BadgeFull emoji="🦸" name="Super-criança" desc="100 tasks completas" tone="berry" unlocked="false" progress="47/100"></BadgeFull>
+      <BadgeFull emoji="🎁" name="Caça-prêmios" desc="Resgatou 10 rewards" tone="plum" unlocked="false" progress="3/10"></BadgeFull>
+    </div>
+  </div>
+
+  <div class="mt-8">
+    <div class="eyebrow">🌸 Sazonais</div>
+    <div class="grid grid-cols-3 md:grid-cols-4 gap-4 mt-4">
+      <BadgeFull emoji="🎄" name="Natal Helper" desc="Dezembro 2025" tone="berry" unlocked="false" progress="locked"></BadgeFull>
+      <BadgeFull emoji="🐰" name="Páscoa" desc="Abril 2026" tone="sky" unlocked="false" progress="em 11m"></BadgeFull>
+      <BadgeFull emoji="🌻" name="Verão produtivo" desc="Janeiro-Março" tone="honey" unlocked="true" date="jan 2026"></BadgeFull>
+      <BadgeFull emoji="🎒" name="Volta às aulas" desc="Fevereiro" tone="plum" unlocked="false" progress="em 9m"></BadgeFull>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: XP HISTORY                              -->
+<!-- ============================================== -->
+<section id="xp-history" class="screen">
+  <div class="eyebrow rise">Audit log</div>
+  <h2 class="font-display text-4xl mt-1 rise d1">XP History · todo o caminho até aqui.</h2>
+  <p class="mt-2 rise d2" style="color: var(--ink-2);">Cada XP ganho ou gasto fica registrado pra sempre. Auditável + reversível por parent.</p>
+
+  <!-- Chart -->
+  <div class="mt-8 card-soft p-6">
+    <div class="flex items-end justify-between mb-5">
+      <div>
+        <div class="eyebrow">XP acumulado</div>
+        <div class="font-display text-4xl mt-1">1.240 XP</div>
+      </div>
+      <div class="flex gap-2 text-xs">
+        <button class="chip" style="background: var(--paper); border:1px solid var(--line);">7d</button>
+        <button class="chip pill-ink">30d</button>
+        <button class="chip" style="background: var(--paper); border:1px solid var(--line);">All</button>
+      </div>
+    </div>
+    <!-- Simple SVG line chart -->
+    <svg viewBox="0 0 600 200" class="w-full" style="height: 200px;">
+      <defs>
+        <linearGradient id="xpGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#FF6B47" stop-opacity="0.5"/>
+          <stop offset="100%" stop-color="#FF6B47" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="M 0 180 L 50 170 L 100 165 L 150 140 L 200 120 L 250 110 L 300 90 L 350 75 L 400 60 L 450 50 L 500 40 L 550 30 L 600 25 L 600 200 L 0 200 Z" fill="url(#xpGrad)"/>
+      <path d="M 0 180 L 50 170 L 100 165 L 150 140 L 200 120 L 250 110 L 300 90 L 350 75 L 400 60 L 450 50 L 500 40 L 550 30 L 600 25" fill="none" stroke="#FF6B47" stroke-width="2.5"/>
+      <!-- Level up markers -->
+      <circle cx="250" cy="110" r="6" fill="#FFB627" stroke="#FFF" stroke-width="2"/>
+      <circle cx="450" cy="50" r="6" fill="#FFB627" stroke="#FFF" stroke-width="2"/>
+      <text x="450" y="35" font-size="10" fill="#7A4D00" text-anchor="middle" style="font-family: 'DM Mono', monospace;">L7 ⭐</text>
+    </svg>
+    <div class="flex items-center justify-between mt-3 text-[10px] font-mono" style="color: var(--ink-2);">
+      <span>há 30d</span><span>há 20d</span><span>há 10d</span><span>hoje</span>
+    </div>
+  </div>
+
+  <!-- Stats summary -->
+  <div class="grid md:grid-cols-4 gap-3 mt-6">
+    <div class="card-soft p-4">
+      <div class="eyebrow">Ganho últimos 30d</div>
+      <div class="font-display text-2xl mt-1" style="color: var(--leaf);">+870 XP</div>
+    </div>
+    <div class="card-soft p-4">
+      <div class="eyebrow">Gasto em rewards</div>
+      <div class="font-display text-2xl mt-1" style="color: var(--berry);">-350 XP</div>
+    </div>
+    <div class="card-soft p-4">
+      <div class="eyebrow">Bônus streak</div>
+      <div class="font-display text-2xl mt-1" style="color: var(--honey);">+100 XP</div>
+    </div>
+    <div class="card-soft p-4">
+      <div class="eyebrow">Média diária</div>
+      <div class="font-display text-2xl mt-1">29 XP</div>
+    </div>
+  </div>
+
+  <!-- Event log -->
+  <div class="mt-8">
+    <div class="eyebrow">Eventos</div>
+    <div class="mt-3 space-y-2">
+      <XpEvent type="approve" task="Tirar lixo da semana" delta="+30" when="hoje 14:23" by="Maria"></XpEvent>
+      <XpEvent type="streak" task="Bônus streak 14 dias" delta="+50" when="hoje 09:00"></XpEvent>
+      <XpEvent type="redeem" task="Pizza sexta" delta="-500" when="ontem 19:42"></XpEvent>
+      <XpEvent type="approve" task="Arrumar quarto" delta="+60" when="ontem 11:15" by="Maria"></XpEvent>
+      <XpEvent type="approve" task="Estudar inglês" delta="+160" when="ontem 09:30" by="João" levelup="L6 → L7"></XpEvent>
+      <XpEvent type="approve" task="Passear cachorro" delta="+40" when="2 dias atrás" by="Maria"></XpEvent>
+      <XpEvent type="streak" task="Bônus streak 7 dias" delta="+50" when="7 dias atrás"></XpEvent>
+      <XpEvent type="redeem" task="Sorvete grande" delta="-150" when="9 dias atrás"></XpEvent>
+    </div>
+    <div class="text-center mt-5">
+      <button class="btn-ghost rounded-xl px-5 py-2 text-sm font-semibold">Carregar mais ↓</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: INVITE ACCEPTANCE                       -->
+<!-- ============================================== -->
+<section id="invite-accept" class="screen">
+  <div class="max-w-md mx-auto">
+    <div class="text-center rise">
+      <div class="text-6xl">💌</div>
+      <div class="eyebrow mt-4">Você foi convidado!</div>
+      <h2 class="font-display text-4xl mt-2 rise d1" style="line-height:0.95;">
+        Maria te chamou pra <span style="background: linear-gradient(120deg, var(--sunset), var(--berry)); -webkit-background-clip:text; background-clip:text; color:transparent;">Os Silva.</span>
+      </h2>
+    </div>
+
+    <div class="card-soft p-6 mt-8 ribbon-bg rise d2">
+      <div class="flex items-center gap-3">
+        <span class="avatar w-14 h-14 text-lg" style="background: linear-gradient(135deg, #FF6B47, #E94560);">M</span>
+        <div>
+          <div class="font-display text-xl">Os Silva</div>
+          <div class="text-xs font-mono" style="color: var(--ink-2);">5 membros · família ativa</div>
+        </div>
+      </div>
+      <div class="mt-5 grid grid-cols-2 gap-3">
+        <div class="card-soft p-3">
+          <div class="font-display text-2xl">+10</div>
+          <div class="text-xs" style="color: var(--ink-2);">XP boas-vindas</div>
+        </div>
+        <div class="card-soft p-3">
+          <div class="font-display text-2xl">3</div>
+          <div class="text-xs" style="color: var(--ink-2);">irmãos pra competir</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-soft p-6 mt-3 rise d3">
+      <div class="eyebrow">Crie sua conta</div>
+      <div class="mt-3">
+        <label class="eyebrow">Seu nome</label>
+        <input class="w-full mt-2 px-4 py-3 rounded-2xl bg-transparent" style="border: 2px solid var(--line);" placeholder="Manu"/>
+      </div>
+      <div class="mt-3">
+        <label class="eyebrow">Idade</label>
+        <input type="number" class="w-full mt-2 px-4 py-3 rounded-2xl bg-transparent font-mono" style="border: 2px solid var(--line);" placeholder="11"/>
+      </div>
+      <div class="mt-3">
+        <label class="eyebrow">Senha (8+ chars)</label>
+        <input type="password" class="w-full mt-2 px-4 py-3 rounded-2xl bg-transparent font-mono tracking-widest" style="border: 2px solid var(--line);" placeholder="••••••••"/>
+      </div>
+      <button class="btn-primary rounded-2xl w-full mt-5 py-3.5 font-semibold text-lg">Entrar na família 🎉</button>
+      <div class="text-center text-xs mt-3" style="color: var(--ink-2);">Convite expira em 5 dias</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: FORGOT PASSWORD                         -->
+<!-- ============================================== -->
+<section id="forgot" class="screen">
+  <div class="max-w-md mx-auto py-8">
+    <a class="text-sm cursor-pointer" onclick="show('login')" style="color: var(--ink-2);">← Voltar ao login</a>
+
+    <div class="mt-8 rise">
+      <div class="text-5xl">🔑</div>
+      <h2 class="font-display text-4xl mt-3" style="line-height:0.95;">Esqueci a senha</h2>
+      <p class="mt-2" style="color: var(--ink-2);">Vamos enviar um link de reset no seu email.</p>
+    </div>
+
+    <form class="card-soft p-7 mt-7 rise d1" onsubmit="return false;">
+      <label class="eyebrow">Email cadastrado</label>
+      <input type="email" class="w-full mt-2 px-4 py-3 rounded-2xl bg-transparent" style="border: 2px solid var(--line);" placeholder="voce@familia.com"/>
+      <button class="btn-primary rounded-2xl w-full mt-5 py-3.5 font-semibold">Enviar link →</button>
+    </form>
+
+    <!-- Sent state -->
+    <div class="card-soft p-7 mt-3 text-center" style="background: linear-gradient(135deg, #DEEFD0, #C2DFAB); border-color: #7FB069;">
+      <div class="text-4xl">✉️</div>
+      <div class="font-display text-xl mt-3">Email enviado!</div>
+      <div class="text-sm mt-2" style="color: #2E5A1B;">Verifique sua caixa de entrada. Link válido por 1h.</div>
+      <button class="text-xs underline mt-4" style="color: #2E5A1B;">Não recebi · enviar de novo</button>
+    </div>
+
+    <div class="card-soft p-5 mt-6">
+      <div class="eyebrow">Reset password</div>
+      <p class="text-xs mt-2" style="color: var(--ink-2);">(o que aparece após click no email)</p>
+      <input type="password" class="w-full mt-3 px-4 py-3 rounded-2xl bg-transparent font-mono tracking-widest" style="border: 2px solid var(--line);" placeholder="Nova senha"/>
+      <input type="password" class="w-full mt-2 px-4 py-3 rounded-2xl bg-transparent font-mono tracking-widest" style="border: 2px solid var(--line);" placeholder="Confirmar"/>
+      <div class="mt-3 grid grid-cols-3 gap-1 text-[10px]">
+        <span class="text-center py-1 rounded" style="background: var(--leaf); color: white;">8+ chars</span>
+        <span class="text-center py-1 rounded" style="background: var(--leaf); color: white;">Maiúscula</span>
+        <span class="text-center py-1 rounded" style="background: var(--line); color: var(--ink-2);">Número</span>
+      </div>
+      <button class="btn-primary rounded-2xl w-full mt-4 py-3 font-semibold">Redefinir senha</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: EMAIL VERIFICATION                      -->
+<!-- ============================================== -->
+<section id="verify" class="screen">
+  <div class="max-w-md mx-auto py-12 text-center">
+    <div class="text-7xl rise">✉️</div>
+    <h2 class="font-display text-4xl mt-5 rise d1" style="line-height:0.95;">
+      Verifique seu <span style="color: var(--sunset);">email</span>
+    </h2>
+    <p class="mt-3 rise d2" style="color: var(--ink-2);">
+      Enviamos um link de confirmação para<br/>
+      <strong style="color: var(--ink);">maria@silva.com</strong>
+    </p>
+
+    <div class="card-soft p-8 mt-8 rise d3 text-left">
+      <div class="eyebrow">Próximos passos</div>
+      <div class="mt-4 space-y-3 text-sm">
+        <div class="flex gap-3">
+          <span class="check on flex-shrink-0"></span>
+          <div>Abra seu cliente de email</div>
+        </div>
+        <div class="flex gap-3">
+          <span class="check on flex-shrink-0"></span>
+          <div>Procure email de <strong>noreply@chorequest.com</strong></div>
+        </div>
+        <div class="flex gap-3">
+          <span class="check flex-shrink-0"></span>
+          <div>Click no botão "Verificar email"</div>
+        </div>
+        <div class="flex gap-3">
+          <span class="check flex-shrink-0"></span>
+          <div>Volte aqui e continue</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 flex flex-col items-center gap-2">
+      <button class="btn-ghost rounded-xl px-5 py-2.5 text-sm font-semibold">📨 Reenviar email</button>
+      <div class="text-xs font-mono" style="color: var(--ink-2);">Pode reenviar em 47s</div>
+    </div>
+
+    <div class="text-xs mt-8" style="color: var(--ink-2);">
+      Email errado? <a class="font-semibold cursor-pointer" style="color: var(--sunset);">Trocar email</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: PUBLIC PROFILE                          -->
+<!-- ============================================== -->
+<section id="profile-public" class="screen">
+  <div class="ribbon-bg rounded-[28px] p-8 border" style="border-color: var(--line);">
+    <div class="flex items-center gap-6 flex-wrap">
+      <span class="avatar w-24 h-24 text-3xl" style="background: linear-gradient(135deg, #FF6B47, #E94560); border-radius: 28px;">M</span>
+      <div class="flex-1">
+        <div class="flex items-center gap-2 flex-wrap">
+          <h2 class="font-display text-4xl">Manu Silva</h2>
+          <span class="chip pill-honey">child</span>
+          <span class="chip pill-sunset">🔥 14d streak</span>
+        </div>
+        <div class="font-mono text-sm mt-2" style="color: var(--ink-2);">
+          Level 7 · 1.240 XP · Membro desde jan 2026
+        </div>
+        <div class="flex items-center gap-2 mt-4">
+          <button class="btn-ghost rounded-xl px-4 py-2 text-sm font-semibold">💬 Mensagem</button>
+          <button class="btn-ghost rounded-xl px-4 py-2 text-sm font-semibold">⭐ Dar high-five</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid lg:grid-cols-3 gap-4 mt-8">
+    <div class="card-soft p-6">
+      <div class="eyebrow">Estatísticas</div>
+      <div class="space-y-3 mt-4">
+        <div class="flex justify-between"><span>Total XP ganho</span><span class="font-mono font-semibold">2.140</span></div>
+        <div class="flex justify-between"><span>Tasks completas</span><span class="font-mono font-semibold">47</span></div>
+        <div class="flex justify-between"><span>Maior streak</span><span class="font-mono font-semibold">14d</span></div>
+        <div class="flex justify-between"><span>Rewards resgatadas</span><span class="font-mono font-semibold">3</span></div>
+        <div class="flex justify-between"><span>Posição no ranking</span><span class="font-mono font-semibold" style="color: var(--sunset);">1º 👑</span></div>
+      </div>
+    </div>
+    <div class="card-soft p-6">
+      <div class="eyebrow">Badges destaque</div>
+      <div class="grid grid-cols-3 gap-3 mt-4">
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center text-2xl" style="background: linear-gradient(135deg, #FFB627, #E94560);">🏆</div>
+          <div class="text-[10px] mt-1 font-semibold">Streak Warrior</div>
+        </div>
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center text-2xl" style="background: linear-gradient(135deg, #7FB069, #5C8C44);">💎</div>
+          <div class="text-[10px] mt-1 font-semibold">1000 XP</div>
+        </div>
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center text-2xl" style="background: linear-gradient(135deg, #FF6B47, #E94560);">🚀</div>
+          <div class="text-[10px] mt-1 font-semibold">First PR</div>
+        </div>
+      </div>
+      <button class="text-xs mt-4 underline" onclick="show('badges')" style="color: var(--sunset);">Ver todas as 8 →</button>
+    </div>
+    <div class="card-soft p-6">
+      <div class="eyebrow">Atividade recente</div>
+      <div class="mt-4 space-y-2 text-sm">
+        <div>✅ Aprovada "Tirar lixo" <span class="text-xs font-mono" style="color: var(--ink-2);">há 1h</span></div>
+        <div>⭐ Level Up L6→L7 <span class="text-xs font-mono" style="color: var(--ink-2);">ontem</span></div>
+        <div>🎁 Resgatou "Sorvete" <span class="text-xs font-mono" style="color: var(--ink-2);">9d atrás</span></div>
+        <div>🔥 Streak chegou a 7d <span class="text-xs font-mono" style="color: var(--ink-2);">7d atrás</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parent-only actions -->
+  <div class="card-soft p-6 mt-6" style="background: linear-gradient(135deg, #E6D7EA, #C9ADD2); border-color: #6B3F73;">
+    <div class="flex items-center gap-2">
+      <span class="chip pill-plum">parent only</span>
+      <span class="font-display text-lg">Ações administrativas</span>
+    </div>
+    <div class="flex flex-wrap gap-2 mt-4">
+      <button class="btn-ghost rounded-xl px-4 py-2 text-sm">Ajustar XP manual</button>
+      <button class="btn-ghost rounded-xl px-4 py-2 text-sm">Resetar senha</button>
+      <button class="btn-ghost rounded-xl px-4 py-2 text-sm">Trocar role</button>
+      <button class="rounded-xl px-4 py-2 text-sm font-semibold" style="background: transparent; color: var(--berry); border: 1.5px solid var(--berry);">Remover da família</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: REWARD POST-REDEEM                      -->
+<!-- ============================================== -->
+<section id="reward-post" class="screen">
+  <div class="grid lg:grid-cols-2 gap-10">
+    <!-- Confirmação inicial -->
+    <div>
+      <div class="eyebrow rise">Resgatado!</div>
+      <h2 class="font-display text-4xl mt-1 rise d1">Aguardando entrega.</h2>
+      <p class="mt-2 rise d2" style="color: var(--ink-2);">Parent recebe notificação e marca como entregue quando rolar.</p>
+
+      <div class="card-soft p-7 mt-8 ribbon-bg rise d3">
+        <div class="text-6xl text-center">🍕</div>
+        <div class="font-display text-3xl mt-4 text-center">Pizza sexta</div>
+        <div class="text-center mt-2">
+          <span class="chip pill-honey">⏳ Aguardando entrega</span>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mt-7">
+          <div class="card-soft p-3 text-center">
+            <div class="eyebrow">Custo</div>
+            <div class="font-display text-2xl mt-1" style="color: var(--berry);">-500 XP</div>
+          </div>
+          <div class="card-soft p-3 text-center">
+            <div class="eyebrow">Saldo após</div>
+            <div class="font-display text-2xl mt-1">740</div>
+          </div>
+        </div>
+        <div class="mt-5 text-xs font-mono text-center" style="color: var(--ink-2);">
+          Resgatado em 24/05/2026 às 19:42<br/>
+          Código: <span class="px-2 py-0.5 rounded" style="background: var(--bg-2);">RDM-7K3N</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status timeline -->
+    <div>
+      <div class="card-soft p-6">
+        <div class="eyebrow">Status</div>
+        <div class="mt-5 relative">
+          <div class="absolute left-3.5 top-2 bottom-2 w-0.5" style="background: var(--line);"></div>
+          <div class="relative flex gap-4 pb-5">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm z-10" style="background: var(--leaf); color: white;">✓</div>
+            <div>
+              <div class="font-semibold">Pedido feito</div>
+              <div class="text-xs font-mono mt-0.5" style="color: var(--ink-2);">XP debitado · 19:42</div>
+            </div>
+          </div>
+          <div class="relative flex gap-4 pb-5">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm z-10" style="background: var(--leaf); color: white;">✓</div>
+            <div>
+              <div class="font-semibold">Parent notificada</div>
+              <div class="text-xs font-mono mt-0.5" style="color: var(--ink-2);">Maria · 19:43</div>
+            </div>
+          </div>
+          <div class="relative flex gap-4 pb-5">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm z-10" style="background: var(--honey); color: white;">⏳</div>
+            <div>
+              <div class="font-semibold">Aguardando entrega</div>
+              <div class="text-xs font-mono mt-0.5" style="color: var(--ink-2);">Estimado: sexta · 19h</div>
+            </div>
+          </div>
+          <div class="relative flex gap-4" style="opacity: 0.4;">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm z-10" style="background: var(--line);">📦</div>
+            <div>
+              <div class="font-semibold">Entregue</div>
+              <div class="text-xs" style="color: var(--ink-2);">Marca o parent quando entregar</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Parent view: confirm delivery -->
+      <div class="card-soft p-5 mt-3" style="background: linear-gradient(135deg, #E6D7EA, #C9ADD2); border-color: #6B3F73;">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="chip pill-plum">parent view</span>
+          <span class="font-display text-base">Confirmar entrega</span>
+        </div>
+        <p class="text-sm" style="color: #401C49;">Quando você entregar a pizza, click pra fechar a redemption.</p>
+        <button class="btn-approve rounded-xl w-full mt-4 py-2.5 text-sm font-semibold">✅ Marcar como entregue</button>
+      </div>
+
+      <div class="card-soft p-5 mt-3">
+        <div class="eyebrow">Outras pessoas resgataram</div>
+        <div class="mt-3 space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span><span class="avatar w-6 h-6 text-[10px] inline-flex mr-2" style="background: linear-gradient(135deg, #FFB627, #FF8C42);">P</span>Pedro</span>
+            <span class="font-mono text-xs" style="color: var(--ink-2);">há 3 dias</span>
+          </div>
+          <div class="flex justify-between">
+            <span><span class="avatar w-6 h-6 text-[10px] inline-flex mr-2" style="background: linear-gradient(135deg, #7FB069, #4F86C6);">B</span>Bia</span>
+            <span class="font-mono text-xs" style="color: var(--ink-2);">semana passada</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: WEEKLY REPORT (print-friendly)          -->
+<!-- ============================================== -->
+<section id="weekly-report" class="screen">
+  <div class="max-w-3xl mx-auto">
+    <div class="flex items-center justify-between mb-6 flex-wrap gap-2">
+      <div>
+        <div class="eyebrow rise">Relatório semanal</div>
+        <h2 class="font-display text-3xl mt-1 rise d1">Os Silva · 18 a 24 de maio</h2>
+      </div>
+      <div class="flex gap-2 rise d2">
+        <button class="btn-ghost rounded-xl px-4 py-2 text-sm">📤 Compartilhar</button>
+        <button class="btn-primary rounded-xl px-4 py-2 text-sm font-semibold">🖨️ Imprimir</button>
+      </div>
+    </div>
+
+    <div class="card-soft p-8 ribbon-bg">
+      <div class="text-center pb-6 border-b" style="border-color: var(--line);">
+        <div class="font-display text-2xl">🏠 Os Silva</div>
+        <div class="text-sm mt-1" style="color: var(--ink-2);">Semana 21 · Maio 2026</div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4 mt-6">
+        <div class="text-center">
+          <div class="font-display text-4xl">3.460</div>
+          <div class="eyebrow mt-1">XP total</div>
+          <div class="text-xs mt-1" style="color: var(--leaf);">▲ +24%</div>
+        </div>
+        <div class="text-center">
+          <div class="font-display text-4xl">47</div>
+          <div class="eyebrow mt-1">Tasks completas</div>
+          <div class="text-xs mt-1" style="color: var(--leaf);">▲ +6</div>
+        </div>
+        <div class="text-center">
+          <div class="font-display text-4xl">12d</div>
+          <div class="eyebrow mt-1">Streak médio</div>
+          <div class="text-xs mt-1" style="color: var(--leaf);">▲ +3d</div>
+        </div>
+      </div>
+
+      <div class="mt-8">
+        <div class="eyebrow">Top da semana</div>
+        <div class="grid grid-cols-3 gap-3 mt-3">
+          <div class="card-soft p-4 text-center" style="background: var(--paper);">
+            <div class="text-2xl">🥇</div>
+            <div class="font-display text-lg mt-1">Manu</div>
+            <div class="text-xs font-mono">1.240 XP</div>
+          </div>
+          <div class="card-soft p-4 text-center" style="background: var(--paper);">
+            <div class="text-2xl">🥈</div>
+            <div class="font-display text-lg mt-1">Pedro</div>
+            <div class="text-xs font-mono">980 XP</div>
+          </div>
+          <div class="card-soft p-4 text-center" style="background: var(--paper);">
+            <div class="text-2xl">🥉</div>
+            <div class="font-display text-lg mt-1">Bia</div>
+            <div class="text-xs font-mono">820 XP</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8">
+        <div class="eyebrow">Categorias mais feitas</div>
+        <div class="mt-3 space-y-2">
+          <div>
+            <div class="flex justify-between text-sm"><span>🧹 Limpeza</span><span class="font-mono">18 tasks</span></div>
+            <div class="h-2 rounded-full mt-1" style="background: var(--bg-2);">
+              <div class="h-full rounded-full" style="width: 80%; background: linear-gradient(90deg, var(--leaf), #5C8C44);"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm"><span>📚 Estudo</span><span class="font-mono">12 tasks</span></div>
+            <div class="h-2 rounded-full mt-1" style="background: var(--bg-2);">
+              <div class="h-full rounded-full" style="width: 53%; background: linear-gradient(90deg, var(--sunset), var(--berry));"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm"><span>🍳 Cozinha</span><span class="font-mono">9 tasks</span></div>
+            <div class="h-2 rounded-full mt-1" style="background: var(--bg-2);">
+              <div class="h-full rounded-full" style="width: 40%; background: linear-gradient(90deg, var(--honey), var(--sunset));"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm"><span>🐶 Pet</span><span class="font-mono">8 tasks</span></div>
+            <div class="h-2 rounded-full mt-1" style="background: var(--bg-2);">
+              <div class="h-full rounded-full" style="width: 35%; background: linear-gradient(90deg, var(--sky), #2E5C9E);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 grid grid-cols-2 gap-4">
+        <div class="card-soft p-5" style="background: var(--paper);">
+          <div class="eyebrow">Conquistas</div>
+          <div class="mt-2 text-sm space-y-1">
+            <div>🏆 Manu: badge Streak Warrior</div>
+            <div>⭐ Manu: Level Up L6→L7</div>
+            <div>💎 Pedro: 1.000 XP totais</div>
+          </div>
+        </div>
+        <div class="card-soft p-5" style="background: var(--paper);">
+          <div class="eyebrow">Recompensas</div>
+          <div class="mt-2 text-sm space-y-1">
+            <div>🍕 Pizza sexta (Manu)</div>
+            <div>🎮 Vídeo-game (Pedro · 2x)</div>
+            <div>🍦 Sorvete (Bia)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 p-5 rounded-2xl" style="background: linear-gradient(135deg, #FFE7DC, #FFD3C2);">
+        <div class="eyebrow" style="color: #8B2E14;">💡 Insight da semana</div>
+        <p class="mt-2 text-sm" style="color: #5C1D0D;">
+          Bia está crescendo rápido (+340 XP vs semana passada). Considere mover ela pra tasks mais desafiadoras pra manter o engajamento.
+        </p>
+      </div>
+
+      <div class="text-center mt-8 pt-6 border-t text-xs font-mono" style="border-color: var(--line); color: var(--ink-2);">
+        Gerado por ChoreQuest · chorequest.app
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: FAMILY EMPTY STATE                      -->
+<!-- ============================================== -->
+<section id="family-empty" class="screen">
+  <div class="max-w-2xl mx-auto py-12 text-center">
+    <div class="text-7xl rise">🌱</div>
+    <h2 class="font-display text-4xl mt-5 rise d1" style="line-height:0.95;">
+      Sua família tá <span style="color: var(--leaf);">só começando.</span>
+    </h2>
+    <p class="mt-3 rise d2 max-w-md mx-auto" style="color: var(--ink-2);">
+      Convide pelo menos 1 criança pra começar a atribuir tarefas e ver a mágica acontecer.
+    </p>
+
+    <div class="card-soft p-8 mt-8 rise d3 text-left">
+      <div class="eyebrow">Convide alguém</div>
+      <div class="mt-4 grid md:grid-cols-2 gap-3">
+        <input class="px-4 py-3 rounded-2xl bg-transparent" style="border: 2px solid var(--line);" placeholder="Nome (ex: Manu)"/>
+        <input type="email" class="px-4 py-3 rounded-2xl bg-transparent" style="border: 2px solid var(--line);" placeholder="email@exemplo.com"/>
+      </div>
+      <div class="mt-3">
+        <label class="eyebrow">Role</label>
+        <div class="flex gap-2 mt-2">
+          <button class="px-4 py-2 rounded-xl text-sm font-semibold pill-honey">child</button>
+          <button class="px-4 py-2 rounded-xl text-sm" style="background: var(--paper); border:1px solid var(--line);">parent</button>
+        </div>
+      </div>
+      <button class="btn-primary rounded-2xl w-full mt-5 py-3 font-semibold">📨 Enviar convite</button>
+    </div>
+
+    <div class="card-soft p-6 mt-3 rise d4">
+      <div class="eyebrow">Ou compartilhe o link diretamente</div>
+      <div class="flex items-center gap-2 mt-3">
+        <input value="https://chorequest.app/i/silva-7K3N" readonly class="flex-1 px-4 py-2 rounded-xl bg-transparent font-mono text-xs" style="border: 2px solid var(--line);"/>
+        <button class="btn-ghost rounded-xl px-4 py-2 text-sm font-semibold">📋 Copiar</button>
+      </div>
+      <div class="grid grid-cols-4 gap-2 mt-3">
+        <button class="card-soft p-3 text-center lift">
+          <div class="text-xl">💬</div>
+          <div class="text-[10px] mt-1">WhatsApp</div>
+        </button>
+        <button class="card-soft p-3 text-center lift">
+          <div class="text-xl">📧</div>
+          <div class="text-[10px] mt-1">Email</div>
+        </button>
+        <button class="card-soft p-3 text-center lift">
+          <div class="text-xl">💼</div>
+          <div class="text-[10px] mt-1">SMS</div>
+        </button>
+        <button class="card-soft p-3 text-center lift">
+          <div class="text-xl">📲</div>
+          <div class="text-[10px] mt-1">QR Code</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-10 text-sm" style="color: var(--ink-2);">
+      Ou crie uma <a class="font-semibold cursor-pointer" onclick="show('create')" style="color: var(--sunset);">task demo</a> pra você mesmo enquanto isso 🎯
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: STREAK AT RISK                          -->
+<!-- ============================================== -->
+<section id="streak-risk" class="screen">
+  <div class="text-center mb-8">
+    <div class="eyebrow rise">Modal · Alerta</div>
+    <h2 class="font-display text-4xl mt-1 rise d1">Streak em risco — lembrete urgente</h2>
+    <p class="mt-2 rise d2" style="color: var(--ink-2);">Disparado às 20h se user ainda não fez task aprovada hoje.</p>
+  </div>
+
+  <div class="max-w-md mx-auto relative mt-8 rise d3">
+    <div class="absolute -top-4 -right-4 text-4xl rotate-12">⚠️</div>
+    <div class="absolute -top-2 -left-4 text-3xl -rotate-6">⏰</div>
+
+    <div class="card-soft p-8 text-center" style="background: linear-gradient(180deg, #FFE7DC, #FFD3C2); border: 2px solid #FF6B47; border-radius: 28px;">
+      <div class="font-display text-7xl">14d</div>
+      <div class="font-display text-2xl mt-2" style="color: #8B2E14;">Seu streak tá em risco!</div>
+
+      <div class="mt-5 flame inline-block">
+        <svg width="64" height="80" viewBox="0 0 34 44">
+          <path d="M17 4 C8 14, 6 24, 6 30 a11 11 0 0 0 22 0 c0-6-3-11-11-26z" fill="#FF6B47"/>
+          <path d="M17 16 C12 22, 11 28, 11 31 a6 6 0 0 0 12 0 c0-4-2-7-6-15z" fill="#FFB627"/>
+        </svg>
+      </div>
+
+      <p class="mt-5 text-sm" style="color: #5C1D0D;">
+        Faltam <strong>3h47min</strong> pra meia-noite. Complete ao menos 1 tarefa pra manter sua chama acesa!
+      </p>
+
+      <div class="mt-7 card-soft p-4 text-left" style="background: var(--paper);">
+        <div class="eyebrow">Tarefas rápidas que você pode fazer agora</div>
+        <div class="mt-3 space-y-2">
+          <div class="flex items-center justify-between p-2 rounded-xl" style="background: var(--bg-2);">
+            <span class="text-sm">🪴 Regar plantas <span class="text-xs" style="color: var(--ink-2);">· 5min</span></span>
+            <span class="font-mono text-xs">+20</span>
+          </div>
+          <div class="flex items-center justify-between p-2 rounded-xl" style="background: var(--bg-2);">
+            <span class="text-sm">🗑️ Tirar lixo <span class="text-xs" style="color: var(--ink-2);">· 3min</span></span>
+            <span class="font-mono text-xs">+30</span>
+          </div>
+          <div class="flex items-center justify-between p-2 rounded-xl" style="background: var(--bg-2);">
+            <span class="text-sm">🍽️ Lavar 5 louças <span class="text-xs" style="color: var(--ink-2);">· 10min</span></span>
+            <span class="font-mono text-xs">+45</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2 mt-6">
+        <button class="btn-primary rounded-2xl w-full py-3.5 font-semibold text-lg">Vou fazer agora! 💪</button>
+        <button class="text-xs underline" style="color: #5C1D0D;">Não consigo hoje · ok perder streak</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: CONFIRM DESTRUCTIVE                     -->
+<!-- ============================================== -->
+<section id="confirm-destroy" class="screen">
+  <div class="text-center mb-8">
+    <div class="eyebrow rise">Padrão · Ação destrutiva</div>
+    <h2 class="font-display text-4xl mt-1 rise d1">Confirmação obrigatória.</h2>
+    <p class="mt-2 max-w-2xl mx-auto rise d2" style="color: var(--ink-2);">
+      Toda ação irreversível (delete, leave family, reset XP) usa esse modal. Tipo "DELETE" pra confirmar.
+    </p>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+    <!-- Variant: medium severity -->
+    <div class="rise d3">
+      <div class="eyebrow text-center mb-2">Variant · médio</div>
+      <div class="card-soft p-7" style="border: 2px solid var(--berry); border-radius: 24px;">
+        <div class="text-4xl text-center">🗑️</div>
+        <div class="font-display text-2xl text-center mt-3">Arquivar task?</div>
+        <p class="text-sm text-center mt-2" style="color: var(--ink-2);">
+          "Lavar a louça do jantar" será arquivada. Pode ser restaurada por 30 dias.
+        </p>
+        <div class="card-soft p-3 mt-5" style="background: var(--bg-2);">
+          <div class="text-xs">
+            <strong>O que acontece:</strong><br/>
+            • Task some da lista ativa<br/>
+            • XP não é creditado<br/>
+            • Histórico mantido por 30 dias
+          </div>
+        </div>
+        <div class="flex gap-2 mt-6">
+          <button class="btn-ghost rounded-xl flex-1 py-2.5 text-sm font-semibold">Cancelar</button>
+          <button class="rounded-xl flex-1 py-2.5 text-sm font-semibold" style="background: linear-gradient(180deg, #FF8866, #E94560); color: white;">Arquivar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variant: high severity (type-to-confirm) -->
+    <div class="rise d4">
+      <div class="eyebrow text-center mb-2">Variant · crítico</div>
+      <div class="card-soft p-7" style="border: 2px solid #B91A38; border-radius: 24px; background: linear-gradient(180deg, #FFFDF8, #FFE7DC);">
+        <div class="text-4xl text-center">💥</div>
+        <div class="font-display text-2xl text-center mt-3" style="color: #B91A38;">Deletar família?</div>
+        <p class="text-sm text-center mt-2" style="color: #5C1D0D;">
+          <strong>Esta ação é IRREVERSÍVEL.</strong>
+        </p>
+        <div class="card-soft p-3 mt-5" style="background: #FFD9DD;">
+          <div class="text-xs" style="color: #6B0F1A;">
+            <strong>Tudo será perdido:</strong><br/>
+            • 5 membros desconectados<br/>
+            • 47 tasks arquivadas permanentemente<br/>
+            • 3.460 XP histórico apagado<br/>
+            • Recompensas não resgatadas perdidas
+          </div>
+        </div>
+        <div class="mt-5">
+          <label class="eyebrow">Para confirmar, digite <code class="font-mono px-2 py-0.5 rounded" style="background: var(--bg-2);">DELETAR OS SILVA</code></label>
+          <input class="w-full mt-2 px-4 py-3 rounded-2xl bg-transparent font-mono text-sm" style="border: 2px solid #B91A38;" placeholder="digite aqui…"/>
+        </div>
+        <div class="flex gap-2 mt-5">
+          <button class="btn-ghost rounded-xl flex-1 py-2.5 text-sm font-semibold">Voltar</button>
+          <button class="rounded-xl flex-1 py-2.5 text-sm font-semibold" disabled style="background: var(--line); color: var(--ink-2); cursor: not-allowed;">Deletar (digite p/ ativar)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: 404 NOT FOUND                           -->
+<!-- ============================================== -->
+<section id="not-found" class="screen">
+  <div class="max-w-md mx-auto py-12 text-center">
+    <div class="font-display text-9xl rise" style="background: linear-gradient(120deg, var(--sunset), var(--berry), var(--plum)); -webkit-background-clip:text; background-clip:text; color:transparent; line-height:1;">404</div>
+    <div class="text-5xl mt-4 rise d1">🧭</div>
+    <h2 class="font-display text-3xl mt-5 rise d2">Quest não encontrada.</h2>
+    <p class="mt-3 rise d3" style="color: var(--ink-2);">
+      A página que você procura ou foi arquivada, ou nunca existiu.
+      Sem stress, tem muita coisa pra fazer por aqui.
+    </p>
+
+    <div class="grid grid-cols-2 gap-3 mt-8 rise d4">
+      <a class="card-soft p-5 lift cursor-pointer text-left" onclick="show('dashboard')">
+        <div class="text-2xl">🏠</div>
+        <div class="font-display text-sm mt-2">Voltar ao home</div>
+      </a>
+      <a class="card-soft p-5 lift cursor-pointer text-left" onclick="show('tasks')">
+        <div class="text-2xl">📋</div>
+        <div class="font-display text-sm mt-2">Ver tasks</div>
+      </a>
+      <a class="card-soft p-5 lift cursor-pointer text-left" onclick="show('rewards')">
+        <div class="text-2xl">🎁</div>
+        <div class="font-display text-sm mt-2">Loja de rewards</div>
+      </a>
+      <a class="card-soft p-5 lift cursor-pointer text-left" onclick="show('intro')">
+        <div class="text-2xl">📚</div>
+        <div class="font-display text-sm mt-2">Ajuda</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- SCREEN: MAINTENANCE                             -->
+<!-- ============================================== -->
+<section id="maintenance" class="screen">
+  <div class="max-w-md mx-auto py-12 text-center">
+    <div class="text-7xl rise">🛠️</div>
+    <h2 class="font-display text-4xl mt-5 rise d1" style="line-height:0.95;">
+      Em <span style="color: var(--honey);">manutenção</span><br/>rapidinho.
+    </h2>
+    <p class="mt-3 rise d2" style="color: var(--ink-2);">
+      Estamos colocando coisas novas. Em até 15 minutos voltamos.
+      Seu streak <strong>não vai quebrar</strong> — pausa automática.
+    </p>
+
+    <div class="card-soft p-7 mt-8 rise d3">
+      <div class="eyebrow">Status</div>
+      <div class="flex items-center justify-center gap-2 mt-3">
+        <div class="w-3 h-3 rounded-full" style="background: var(--honey); animation: flicker 1.5s infinite;"></div>
+        <span class="text-sm font-semibold">Deploy em andamento</span>
+      </div>
+      <div class="font-mono text-2xl mt-5">~12min restantes</div>
+      <div class="h-2 rounded-full mt-3" style="background: var(--bg-2);">
+        <div class="h-full rounded-full xp-fill" style="--w: 60%; background: linear-gradient(90deg, var(--honey), var(--sunset));"></div>
+      </div>
+
+      <div class="accent-line my-6"></div>
+
+      <div class="eyebrow">O que tá vindo nesta atualização</div>
+      <div class="mt-3 text-sm text-left space-y-1.5">
+        <div>✨ Badges sazonais novos</div>
+        <div>🐛 Fix: streak não atualizava após meia-noite</div>
+        <div>⚡ Performance 30% mais rápido no leaderboard</div>
+      </div>
+    </div>
+
+    <div class="mt-6 flex flex-col items-center gap-2">
+      <button class="btn-ghost rounded-xl px-5 py-2 text-sm font-semibold">📡 Verificar status</button>
+      <a class="text-xs underline" style="color: var(--ink-2);">status.chorequest.app</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================== -->
+<!-- Footer                                          -->
+<!-- ============================================== -->
+<footer class="border-t mt-20" style="border-color: var(--line); background: rgba(255,239,216,0.4);">
+  <div class="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between text-xs font-mono" style="color: var(--ink-2);">
+    <div>ChoreQuest · Cozy Quest Design System v1 · 2026</div>
+    <div>🏠 + 🔥 + ⭐ = 🎯</div>
+  </div>
+</footer>
+
+<script>
+  // Component-like helpers (string replacement before render)
+  // Replace placeholder elements with HTML — simulating components
+
+  function expandComponents() {
+    // ScreenCard
+    document.querySelectorAll('ScreenCard').forEach(el => {
+      const k = el.getAttribute('k'), t = el.getAttribute('t'), e = el.getAttribute('e'), b = el.getAttribute('b');
+      el.outerHTML = `
+        <button onclick="show('${k}')" class="card-soft p-4 lift text-left">
+          <div class="text-3xl">${e}</div>
+          <div class="font-display text-lg mt-2">${t}</div>
+          <span class="chip ${b} mt-3 inline-block">ver tela →</span>
+        </button>`;
+    });
+    // BadgeChip
+    document.querySelectorAll('BadgeChip').forEach(el => {
+      const label = el.getAttribute('label'), emoji = el.getAttribute('emoji'), tone = el.getAttribute('tone');
+      el.outerHTML = `<span class="chip ${tone}">${emoji} ${label}</span>`;
+    });
+    // TaskCard
+    document.querySelectorAll('TaskCard').forEach(el => {
+      const title = el.getAttribute('title'), cat = el.getAttribute('cat'), points = el.getAttribute('points'),
+            diff = el.getAttribute('diff'), status = el.getAttribute('status'), tone = el.getAttribute('tone'),
+            who = el.getAttribute('who'), emoji = el.getAttribute('emoji');
+      const diffPill = diff === 'Easy' ? 'pill-leaf' : diff === 'Medium' ? 'pill-honey' : 'pill-berry';
+      el.outerHTML = `
+        <div class="card-soft p-5 lift">
+          <div class="flex items-center justify-between">
+            <span class="chip pill-${tone}">${status}</span>
+            <span class="font-mono text-xs" style="color: var(--ink-2);">${cat}</span>
+          </div>
+          <div class="font-display text-xl mt-3 flex items-start gap-2">
+            <span>${emoji}</span><span>${title}</span>
+          </div>
+          <div class="flex items-center justify-between mt-5">
+            <div class="flex items-center gap-2">
+              <span class="avatar w-7 h-7 text-xs" style="background: linear-gradient(135deg, var(--${tone}), var(--berry));">${who[0]}</span>
+              <span class="text-xs" style="color: var(--ink-2);">${who}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="chip ${diffPill}">${diff}</span>
+              <span class="font-mono font-semibold text-sm">+${points} XP</span>
+            </div>
+          </div>
+        </div>`;
+    });
+    // ActivityRow
+    document.querySelectorAll('ActivityRow').forEach(el => {
+      const tone = el.getAttribute('tone'), emoji = el.getAttribute('emoji'),
+            title = el.getAttribute('title'), sub = el.getAttribute('sub');
+      el.outerHTML = `
+        <div class="card-soft p-3 flex items-center gap-3 lift">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style="background: var(--bg-2);">${emoji}</div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">${title}</div>
+            <div class="text-xs font-mono" style="color: var(--ink-2);">${sub}</div>
+          </div>
+          <span class="chip pill-${tone}">new</span>
+        </div>`;
+    });
+    // RankRow
+    document.querySelectorAll('RankRow').forEach(el => {
+      const rank = el.getAttribute('rank'), name = el.getAttribute('name'),
+            lvl = el.getAttribute('lvl'), xp = el.getAttribute('xp'),
+            you = el.getAttribute('you'), color = el.getAttribute('color');
+      const isYou = you === 'true';
+      el.outerHTML = `
+        <div class="flex items-center gap-3 p-3 ${isYou ? 'rounded-2xl' : ''}" style="${isYou ? 'background: linear-gradient(90deg, rgba(255,107,71,0.08), transparent);' : 'border-bottom:1px solid var(--line);'}">
+          <div class="font-display text-2xl w-8 text-center" style="color: var(--ink-2);">${rank}</div>
+          <div class="avatar w-10 h-10 text-sm" style="background: linear-gradient(135deg, var(--${color}), var(--berry));">${name[0]}</div>
+          <div class="flex-1">
+            <div class="font-semibold">${name} ${isYou ? '<span class="chip pill-sunset ml-2">você</span>' : ''}</div>
+            <div class="text-xs font-mono" style="color: var(--ink-2);">${lvl}</div>
+          </div>
+          <div class="font-mono font-semibold">${xp} <span class="text-xs" style="color: var(--ink-2);">XP</span></div>
+        </div>`;
+    });
+    // ApprovalCard
+    document.querySelectorAll('ApprovalCard').forEach(el => {
+      const who = el.getAttribute('who'), emoji = el.getAttribute('emoji'),
+            color = el.getAttribute('color'), task = el.getAttribute('task'),
+            cat = el.getAttribute('cat'), points = el.getAttribute('points'),
+            diff = el.getAttribute('diff'), time = el.getAttribute('time'),
+            hasNote = el.getAttribute('hasNote') === 'true';
+      const diffPill = diff === 'Easy' ? 'pill-leaf' : diff === 'Medium' ? 'pill-honey' : 'pill-berry';
+      el.outerHTML = `
+        <div class="card-soft p-5 lift">
+          <div class="flex items-center gap-3">
+            <span class="avatar w-10 h-10" style="background: linear-gradient(135deg, var(--${color}), var(--berry));">${emoji}</span>
+            <div class="flex-1">
+              <div class="text-sm font-semibold">${who}</div>
+              <div class="text-xs font-mono" style="color: var(--ink-2);">submeteu ${time}</div>
+            </div>
+            <span class="check"></span>
+          </div>
+          <div class="font-display text-xl mt-3">${task}</div>
+          <div class="flex items-center gap-2 mt-3">
+            <span class="chip pill-${color}">${cat}</span>
+            <span class="chip ${diffPill}">${diff}</span>
+            <span class="font-mono font-semibold text-sm ml-auto">+${points} XP</span>
+          </div>
+          ${hasNote ? `<div class="mt-4 p-3 rounded-xl text-xs" style="background: var(--bg-2); border:1px dashed var(--line);">📝 <em>"Estudei lições 5 e 6, fiz 12 exercícios"</em></div>` : ''}
+          <div class="flex gap-2 mt-5">
+            <button class="flex-1 rounded-xl py-2 text-sm font-semibold" style="background: linear-gradient(180deg, #98D17F, #5C8C44); color: white;">Aprovar ✓</button>
+            <button class="rounded-xl px-3 py-2 text-sm font-semibold" style="background: transparent; color: var(--berry); border: 1.5px solid var(--berry);">Rejeitar</button>
+          </div>
+        </div>`;
+    });
+    // RewardCard
+    document.querySelectorAll('RewardCard').forEach(el => {
+      const emoji = el.getAttribute('emoji'), name = el.getAttribute('name'),
+            cost = el.getAttribute('cost'), stock = el.getAttribute('stock'),
+            tone = el.getAttribute('tone'), affordable = el.getAttribute('affordable') === 'true';
+      el.outerHTML = `
+        <div class="card-soft p-6 lift relative overflow-hidden">
+          <div class="absolute -top-6 -right-6 w-32 h-32 rounded-full opacity-20" style="background: var(--${tone});"></div>
+          <div class="text-5xl relative">${emoji}</div>
+          <div class="font-display text-2xl mt-4 relative">${name}</div>
+          <div class="flex items-center justify-between mt-4 relative">
+            <div class="font-mono">
+              <span class="font-display text-3xl">${cost}</span>
+              <span class="text-xs" style="color: var(--ink-2);">XP</span>
+            </div>
+            <span class="chip pill-${tone}">${stock} disponível${stock === '∞' ? '' : 's'}</span>
+          </div>
+          <button ${affordable ? '' : 'disabled'} class="${affordable ? 'btn-primary' : 'btn-ghost'} rounded-2xl w-full mt-5 py-2.5 font-semibold relative" style="${affordable ? '' : 'opacity:0.5; cursor:not-allowed;'}">${affordable ? 'Resgatar ✨' : 'XP insuficiente'}</button>
+        </div>`;
+    });
+    // FlowStep
+    document.querySelectorAll('FlowStep').forEach(el => {
+      const n = el.getAttribute('n'), emoji = el.getAttribute('emoji'),
+            t = el.getAttribute('t'), s = el.getAttribute('s');
+      el.outerHTML = `
+        <div class="card-soft p-4 flex-1 min-w-[140px] max-w-[180px]" style="border-radius: 18px;">
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style="background: var(--sunset); color: white;">${n}</div>
+            <div class="text-2xl">${emoji}</div>
+          </div>
+          <div class="font-display text-base mt-2">${t}</div>
+          <div class="text-[11px] mt-1" style="color: var(--ink-2);">${s}</div>
+        </div>`;
+    });
+    // FlowArrow
+    document.querySelectorAll('FlowArrow').forEach(el => {
+      el.outerHTML = `<div class="flex items-center self-center" style="color: var(--ink-2); font-size: 24px;">→</div>`;
+    });
+    // BadgeFull
+    document.querySelectorAll('BadgeFull').forEach(el => {
+      const emoji = el.getAttribute('emoji'), name = el.getAttribute('name'),
+            desc = el.getAttribute('desc'), tone = el.getAttribute('tone'),
+            unlocked = el.getAttribute('unlocked') === 'true',
+            date = el.getAttribute('date'), progress = el.getAttribute('progress');
+      el.outerHTML = `
+        <div class="card-soft p-4 text-center lift" style="${unlocked ? '' : 'opacity: 0.55;'}">
+          <div class="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-3xl" style="${unlocked ? `background: linear-gradient(135deg, var(--${tone}), var(--berry)); box-shadow: 0 6px 20px -6px var(--${tone});` : 'background: var(--bg-2); filter: grayscale(1);'}">
+            ${unlocked ? emoji : '🔒'}
+          </div>
+          <div class="font-display text-sm mt-3">${name}</div>
+          <div class="text-[10px] mt-1" style="color: var(--ink-2);">${desc}</div>
+          <div class="text-[10px] font-mono mt-2" style="color: ${unlocked ? 'var(--leaf)' : 'var(--ink-2)'};">
+            ${unlocked ? `✅ ${date}` : `🔒 ${progress}`}
+          </div>
+        </div>`;
+    });
+    // XpEvent
+    document.querySelectorAll('XpEvent').forEach(el => {
+      const type = el.getAttribute('type'), task = el.getAttribute('task'),
+            delta = el.getAttribute('delta'), when = el.getAttribute('when'),
+            by = el.getAttribute('by'), levelup = el.getAttribute('levelup');
+      const config = {
+        approve: { emoji: '✅', tone: 'leaf', color: 'var(--leaf)' },
+        streak: { emoji: '🔥', tone: 'honey', color: 'var(--honey)' },
+        redeem: { emoji: '🎁', tone: 'berry', color: 'var(--berry)' },
+        bonus: { emoji: '⭐', tone: 'sunset', color: 'var(--sunset)' },
+      }[type] || { emoji: '•', tone: 'ink', color: 'var(--ink-2)' };
+      el.outerHTML = `
+        <div class="card-soft p-4 flex items-center gap-3 lift">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style="background: var(--bg-2);">${config.emoji}</div>
+          <div class="flex-1">
+            <div class="font-semibold text-sm">${task}</div>
+            <div class="text-xs font-mono mt-0.5" style="color: var(--ink-2);">
+              ${when}${by ? ' · por ' + by : ''}${levelup ? ' · ⭐ ' + levelup : ''}
+            </div>
+          </div>
+          <div class="font-display text-xl" style="color: ${config.color};">${delta}</div>
+        </div>`;
+    });
+    // Heatmap
+    document.querySelectorAll('Heatmap').forEach(el => {
+      const colors = ['var(--bg-2)','#DEEFD0','#7FB069','#5C8C44','#2E5A1B','#DEEFD0','#7FB069'];
+      let html = '';
+      for (let i = 0; i < 28; i++) {
+        const c = colors[Math.floor(Math.random() * colors.length)];
+        html += `<div class="w-8 h-8 rounded" style="background: ${c};" title="Day ${i+1}"></div>`;
+      }
+      el.outerHTML = html;
+    });
+    // MemberCard
+    document.querySelectorAll('MemberCard').forEach(el => {
+      const name = el.getAttribute('name'), role = el.getAttribute('role'),
+            emoji = el.getAttribute('emoji'), color = el.getAttribute('color'),
+            stats = el.getAttribute('stats');
+      const rolePill = role === 'parent' ? 'pill-plum' : 'pill-honey';
+      el.outerHTML = `
+        <div class="card-soft p-5 lift flex items-center gap-4">
+          <span class="avatar w-14 h-14 text-xl" style="background: linear-gradient(135deg, var(--${color}), var(--berry)); border-radius: 18px;">${emoji}</span>
+          <div class="flex-1">
+            <div class="flex items-center gap-2"><span class="font-display text-xl">${name}</span><span class="chip ${rolePill}">${role}</span></div>
+            <div class="text-xs font-mono mt-1" style="color: var(--ink-2);">${stats}</div>
+          </div>
+          <button class="text-xs px-3 py-1.5 rounded-lg" style="background: var(--bg-2);">⋯</button>
+        </div>`;
+    });
+  }
+
+  function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id)?.classList.add('active');
+    document.querySelectorAll('#tabs .nav-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.screen === id);
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Nav listeners
+  document.querySelectorAll('#tabs .nav-tab').forEach(t => {
+    t.addEventListener('click', e => { e.preventDefault(); show(t.dataset.screen); });
+  });
+
+  // Expand components on load
+  document.addEventListener('DOMContentLoaded', expandComponents);
+</script>
+</body>
+</html>
