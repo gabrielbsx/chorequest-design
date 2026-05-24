@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#FF6B47" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<title>ChoreQuest · Mobile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --bg: #FFF8F0;
+    --bg-2: #FFEFD8;
+    --ink: #1A1410;
+    --ink-2: #5C4A3E;
+    --line: #E8D5B7;
+    --sunset: #FF6B47;
+    --honey: #FFB627;
+    --leaf: #7FB069;
+    --berry: #E94560;
+    --sky: #4F86C6;
+    --plum: #6B3F73;
+    --paper: #FFFDF8;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Manrope', system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    overscroll-behavior: none;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='1'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.5;
+  }
+
+  /* Desktop preview frame */
+  @media (min-width: 768px) {
+    body {
+      background: linear-gradient(135deg, #14110F, #1A1410);
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+    }
+    .app-frame {
+      width: 390px;
+      height: 844px;
+      max-height: 90vh;
+      border-radius: 48px;
+      box-shadow:
+        0 0 0 12px #1a1410,
+        0 0 0 14px #2a2520,
+        0 50px 100px -20px rgba(0,0,0,0.5),
+        0 30px 60px -30px rgba(0,0,0,0.3);
+      overflow: hidden;
+      position: relative;
+      background: var(--bg);
+    }
+    .desktop-info {
+      color: #FFF8F0;
+      max-width: 360px;
+    }
+    .desktop-info h1 {
+      font-family: 'Bricolage Grotesque', serif;
+      font-size: 48px;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      margin: 0 0 16px;
+    }
+    .desktop-info p { color: #C9B89E; line-height: 1.5; }
+    .notch {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 110px;
+      height: 28px;
+      background: #1A1410;
+      border-radius: 18px;
+      z-index: 50;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .app-frame {
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+    }
+    .desktop-info, .notch, .qr-hint { display: none; }
+  }
+
+  /* Status bar (iOS-like) */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 24px 4px;
+    padding-top: max(var(--safe-top), 8px);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: -apple-system, 'SF Pro Text', system-ui;
+  }
+
+  @media (min-width: 768px) {
+    .status-bar { padding-top: 16px; }
+  }
+
+  /* Screen container */
+  .screens {
+    position: relative;
+    height: calc(100% - 90px);
+    overflow: hidden;
+  }
+  @media (min-width: 768px) {
+    .screens { height: calc(100% - 110px); }
+  }
+  .screen-m {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 8px 20px 24px;
+    display: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .screen-m.active { display: block; animation: fadeIn .25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Bottom nav */
+  .bottom-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--paper);
+    border-top: 1px solid var(--line);
+    padding-bottom: max(var(--safe-bottom), 4px);
+    display: flex;
+    z-index: 30;
+    box-shadow: 0 -8px 24px -8px rgba(26,20,16,0.05);
+  }
+  .bottom-nav button {
+    flex: 1;
+    padding: 12px 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--ink-2);
+    position: relative;
+    transition: color .2s;
+  }
+  .bottom-nav button.active {
+    color: var(--sunset);
+  }
+  .bottom-nav button.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 30%;
+    right: 30%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--sunset), var(--berry));
+    border-radius: 0 0 3px 3px;
+  }
+  .bottom-nav .ico { font-size: 22px; display: block; }
+  .bottom-nav .lbl { font-size: 10px; font-weight: 600; margin-top: 2px; display: block; }
+
+  /* Cards */
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 14px;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.6) inset,
+      0 2px 8px rgba(26,20,16,0.04);
+  }
+  .card-hero {
+    background: linear-gradient(135deg, #FFEFD8, #FFE0BC 50%, #FFD3C2);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-hero::before {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -20%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(233,69,96,0.15), transparent 70%);
+    pointer-events: none;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    border-radius: 999px;
+    padding: 3px 9px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .pill-sunset { background: linear-gradient(135deg, #FFE7DC, #FFD3C2); color: #8B2E14; }
+  .pill-honey  { background: linear-gradient(135deg, #FFF1D1, #FFE2A8); color: #7A4D00; }
+  .pill-leaf   { background: linear-gradient(135deg, #DEEFD0, #C2DFAB); color: #2E5A1B; }
+  .pill-berry  { background: linear-gradient(135deg, #FFD9E2, #FFB5C7); color: #8B1B33; }
+  .pill-sky    { background: linear-gradient(135deg, #D9E6F5, #B5CDE9); color: #1B3E66; }
+  .pill-plum   { background: linear-gradient(135deg, #E6D7EA, #C9ADD2); color: #401C49; }
+  .pill-ink    { background: var(--ink); color: var(--bg); }
+
+  .font-display { font-family: 'Bricolage Grotesque', serif; font-variation-settings: "wght" 700; letter-spacing: -0.02em; }
+  .font-mono { font-family: 'DM Mono', monospace; letter-spacing: -0.04em; }
+  .eyebrow { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700; color: var(--ink-2); }
+
+  /* Avatar */
+  .avatar {
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    border: 2px solid var(--paper);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.1), 0 4px 10px -4px rgba(0,0,0,0.2);
+  }
+
+  /* Buttons */
+  .btn-primary {
+    background: linear-gradient(180deg, #FF8866, #FF6B47 60%, #E94560);
+    color: #FFF8F0;
+    border: none;
+    border-radius: 18px;
+    padding: 14px 20px;
+    font-weight: 700;
+    font-size: 15px;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.4) inset,
+      0 6px 18px -6px rgba(255,107,71,0.6);
+    cursor: pointer;
+    transition: transform .1s;
+  }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-primary:disabled { opacity: 0.4; }
+
+  .btn-ghost {
+    background: var(--paper);
+    border: 1.5px solid var(--line);
+    border-radius: 16px;
+    padding: 10px 16px;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .btn-approve {
+    background: linear-gradient(180deg, #98D17F, #5C8C44);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 10px 16px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .btn-reject {
+    background: transparent;
+    color: var(--berry);
+    border: 1.5px solid var(--berry);
+    border-radius: 14px;
+    padding: 10px 16px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  /* FAB */
+  .fab {
+    position: absolute;
+    right: 18px;
+    bottom: 100px;
+    width: 58px;
+    height: 58px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #FF6B47, #E94560);
+    color: white;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    box-shadow: 0 8px 24px -6px rgba(233,69,96,0.5);
+    z-index: 20;
+    cursor: pointer;
+  }
+  .fab:active { transform: scale(0.94); }
+
+  /* XP bar */
+  .xpbar {
+    height: 10px;
+    background: var(--bg-2);
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .xpbar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #FFB627, #FF6B47, #E94560);
+    border-radius: 999px;
+    animation: fillxp 1.2s cubic-bezier(.4,1.4,.4,1) both;
+  }
+  @keyframes fillxp { from { width: 0; } to { width: var(--w, 60%); } }
+
+  /* Flame anim */
+  @keyframes flicker {
+    0%, 100% { transform: scaleY(1); filter: brightness(1); }
+    50% { transform: scaleY(1.08) translateY(-1px); filter: brightness(1.12); }
+  }
+  .flame svg { animation: flicker 1.2s ease-in-out infinite; transform-origin: bottom; }
+
+  /* Modal */
+  .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(26,20,16,0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 40;
+    display: none;
+    align-items: flex-end;
+    animation: fadeIn .2s ease;
+  }
+  .modal-backdrop.active { display: flex; }
+  .modal-sheet {
+    background: var(--paper);
+    width: 100%;
+    border-radius: 28px 28px 0 0;
+    padding: 16px 20px max(20px, var(--safe-bottom));
+    max-height: 80%;
+    overflow-y: auto;
+    animation: slideUp .3s cubic-bezier(.2,.8,.2,1);
+  }
+  .modal-sheet.center {
+    margin: auto;
+    border-radius: 24px;
+    width: calc(100% - 32px);
+    animation: pop .3s cubic-bezier(.2,1.4,.4,1);
+  }
+  .modal-backdrop.center { align-items: center; justify-content: center; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  @keyframes pop { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  .handle {
+    width: 40px;
+    height: 4px;
+    background: var(--ink-2);
+    opacity: 0.25;
+    border-radius: 99px;
+    margin: 0 auto 12px;
+  }
+
+  /* Toast */
+  .toast {
+    position: absolute;
+    top: 50px;
+    left: 16px;
+    right: 16px;
+    background: linear-gradient(135deg, #DEEFD0, #C2DFAB);
+    border: 1px solid #7FB069;
+    border-radius: 16px;
+    padding: 12px 14px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    z-index: 60;
+    box-shadow: 0 8px 24px -6px rgba(0,0,0,0.15);
+    animation: slideDown .3s cubic-bezier(.2,1.4,.4,1);
+  }
+  .toast.active { display: flex; }
+  @keyframes slideDown { from { transform: translateY(-100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  /* Inputs */
+  input, textarea, select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1.5px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--sunset);
+    box-shadow: 0 0 0 3px rgba(255,107,71,0.15);
+  }
+
+  /* QR hint for desktop */
+  .qr-hint {
+    color: #C9B89E;
+    font-size: 12px;
+    text-align: center;
+    margin-top: 12px;
+  }
+
+  /* Notif badge */
+  .notif-dot {
+    position: absolute;
+    top: 8px;
+    right: 14px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--berry);
+    border: 2px solid var(--paper);
+  }
+</style>
+</head>
+<body>
+
+<!-- Desktop side info -->
+<div class="desktop-info">
+  <h1>ChoreQuest <br/>📱 Mobile</h1>
+  <p>Versão mobile interativa do protótipo. À direita, simulação iPhone 15 Pro. Em celular real, abre fullscreen.</p>
+  <p style="margin-top:18px;">Toca nas 5 abas de baixo: <strong>Home · Tasks · Loja · Rank · Eu</strong>. FAB cria task (parent). Notificações via 🔔 no topo.</p>
+  <p style="margin-top:18px; font-size: 14px;">↩️ <a href="index.html" style="color: #FFB627; text-decoration: underline;">Voltar pra versão desktop</a></p>
+  <div class="qr-hint">📱 Abra em celular real:<br/>gabrielbsx.github.io/chorequest-design/mobile.html</div>
+</div>
+
+<!-- The phone frame -->
+<div class="app-frame">
+  <div class="notch"></div>
+
+  <!-- Status bar (iOS-like) -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <span style="font-size: 12px;">📶 📡 🔋</span>
+  </div>
+
+  <!-- Toast (success after action) -->
+  <div class="toast" id="toast">
+    <div style="font-size: 22px;">✅</div>
+    <div style="flex: 1;">
+      <div style="font-weight: 700; font-size: 13px;" id="toast-title">Task aprovada!</div>
+      <div style="font-size: 11px;" id="toast-sub">+30 XP creditado</div>
+    </div>
+  </div>
+
+  <!-- SCREENS -->
+  <div class="screens">
+
+    <!-- ========== HOME ========== -->
+    <section class="screen-m active" id="s-home">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span class="avatar" style="width: 36px; height: 36px; font-size: 13px; background: linear-gradient(135deg, #FF6B47, #E94560);">M</span>
+          <div>
+            <div style="font-size: 11px; color: var(--ink-2);">Boa tarde</div>
+            <div class="font-display" style="font-size: 18px; line-height: 1;">Manu 👋</div>
+          </div>
+        </div>
+        <button onclick="openModal('notif')" style="background: var(--paper); border: 1px solid var(--line); border-radius: 14px; width: 40px; height: 40px; font-size: 18px; cursor: pointer; position: relative;">
+          🔔
+          <span class="notif-dot"></span>
+        </button>
+      </div>
+
+      <!-- Hero card -->
+      <div class="card-hero">
+        <div class="eyebrow">Seu progresso</div>
+        <div style="display: flex; align-items: end; gap: 12px; margin-top: 4px;">
+          <div class="font-display" style="font-size: 48px; line-height: 1;">L7</div>
+          <div style="padding-bottom: 6px;">
+            <div class="font-mono" style="font-size: 11px; color: var(--ink-2);">1.240 / 2.000 XP</div>
+            <div style="font-size: 11px; color: var(--leaf); font-weight: 600;">↑ +60 XP hoje</div>
+          </div>
+        </div>
+        <div class="xpbar" style="margin-top: 8px;">
+          <div class="xpbar-fill" style="--w: 62%;"></div>
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 12px;">
+          <div class="card" style="flex: 1; padding: 10px; display: flex; align-items: center; gap: 8px;">
+            <div class="flame">
+              <svg width="28" height="36" viewBox="0 0 34 44">
+                <path d="M17 4 C8 14, 6 24, 6 30 a11 11 0 0 0 22 0 c0-6-3-11-11-26z" fill="#FF6B47"/>
+                <path d="M17 16 C12 22, 11 28, 11 31 a6 6 0 0 0 12 0 c0-4-2-7-6-15z" fill="#FFB627"/>
+              </svg>
+            </div>
+            <div>
+              <div class="font-display" style="font-size: 20px; line-height: 1;">14d</div>
+              <div style="font-size: 9px; color: var(--ink-2);">streak</div>
+            </div>
+          </div>
+          <div class="card" style="flex: 1; padding: 10px;">
+            <div class="font-display" style="font-size: 20px; line-height: 1;">3</div>
+            <div style="font-size: 9px; color: var(--ink-2);">tasks hoje</div>
+          </div>
+          <div class="card" style="flex: 1; padding: 10px;">
+            <div class="font-display" style="font-size: 20px; line-height: 1;">1º</div>
+            <div style="font-size: 9px; color: var(--ink-2);">no rank</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending tasks -->
+      <div style="display: flex; justify-content: space-between; align-items: end; margin-top: 18px;">
+        <div>
+          <div class="eyebrow">Pendentes hoje</div>
+          <div class="font-display" style="font-size: 18px;">Suas quests</div>
+        </div>
+        <button onclick="showScreen('tasks')" style="background: none; border: none; color: var(--sunset); font-weight: 600; font-size: 12px;">Ver todas →</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+        <div class="card" onclick="openModal('task-detail')" style="cursor: pointer;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="chip pill-honey">🔨 In Progress</span>
+            <span class="font-mono" style="font-size: 11px; color: var(--ink-2);">Estudo</span>
+          </div>
+          <div class="font-display" style="font-size: 15px; margin-top: 8px;">📚 Estudar matemática 30min</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+            <span class="chip pill-berry">🔴 Hard</span>
+            <span class="font-mono" style="font-size: 13px; font-weight: 600;">+80 XP</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="chip pill-sky">📝 To Do</span>
+            <span class="font-mono" style="font-size: 11px; color: var(--ink-2);">Cozinha</span>
+          </div>
+          <div class="font-display" style="font-size: 15px; margin-top: 8px;">🍽️ Lavar louça do jantar</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+            <span class="chip pill-leaf">🟢 Easy</span>
+            <span class="font-mono" style="font-size: 13px; font-weight: 600;">+45 XP</span>
+          </div>
+          <button class="btn-primary" style="width: 100%; margin-top: 10px; padding: 10px; font-size: 13px;">Começar agora →</button>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="chip pill-sky">📝 To Do</span>
+            <span class="font-mono" style="font-size: 11px; color: var(--ink-2);">Quarto</span>
+          </div>
+          <div class="font-display" style="font-size: 15px; margin-top: 8px;">🛏️ Arrumar quarto</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+            <span class="chip pill-honey">🟡 Medium</span>
+            <span class="font-mono" style="font-size: 13px; font-weight: 600;">+60 XP</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Next reward CTA -->
+      <div class="card" style="margin-top: 18px; background: linear-gradient(135deg, #FFE7DC, #FFD3C2); border-color: var(--sunset);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="font-size: 36px;">🍕</div>
+          <div style="flex: 1;">
+            <div class="eyebrow">Próxima recompensa</div>
+            <div class="font-display" style="font-size: 16px;">Pizza sexta</div>
+            <div class="font-mono" style="font-size: 11px; color: #8B2E14; margin-top: 2px;">500 XP · você tem 1.240</div>
+          </div>
+        </div>
+        <button class="btn-primary" style="width: 100%; margin-top: 10px; padding: 10px; font-size: 13px;" onclick="openModal('redeem')">Resgatar agora ✨</button>
+      </div>
+
+      <div style="height: 20px;"></div>
+    </section>
+
+    <!-- ========== TASKS ========== -->
+    <section class="screen-m" id="s-tasks">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0 12px;">
+        <div class="font-display" style="font-size: 22px;">Tasks</div>
+        <div style="display: flex; gap: 6px;">
+          <button style="background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 6px 12px; font-size: 12px;">🔍</button>
+          <button style="background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 6px 12px; font-size: 12px;">⚙️</button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div style="display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 8px; scrollbar-width: none;">
+        <span class="chip pill-ink" style="flex-shrink: 0;">Tudo · 12</span>
+        <span class="chip" style="flex-shrink: 0; background: var(--paper); border: 1px solid var(--line);">📝 To Do · 3</span>
+        <span class="chip" style="flex-shrink: 0; background: var(--paper); border: 1px solid var(--line);">🔨 In Progress · 2</span>
+        <span class="chip" style="flex-shrink: 0; background: var(--paper); border: 1px solid var(--line);">👀 Review · 2</span>
+        <span class="chip" style="flex-shrink: 0; background: var(--paper); border: 1px solid var(--line);">✅ Done · 5</span>
+      </div>
+
+      <div class="eyebrow" style="margin-top: 10px;">🔨 In Progress · 2</div>
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+        <div class="card">
+          <div class="font-display" style="font-size: 14px;">📚 Estudar matemática 30min</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+            <div style="display: flex; gap: 4px;">
+              <span class="chip pill-honey">🔨</span>
+              <span class="chip pill-berry">🔴 Hard</span>
+            </div>
+            <span class="font-mono" style="font-size: 12px;">+80 XP</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="font-display" style="font-size: 14px;">🧹 Passar aspirador na sala</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+            <div style="display: flex; gap: 4px;">
+              <span class="chip pill-honey">🔨</span>
+              <span class="chip pill-honey">🟡 Med</span>
+            </div>
+            <span class="font-mono" style="font-size: 12px;">+50 XP</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="eyebrow" style="margin-top: 16px;">📝 To Do · 3</div>
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+        <div class="card">
+          <div class="font-display" style="font-size: 14px;">🍽️ Lavar louça do jantar</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+            <div style="display: flex; gap: 4px;">
+              <span class="chip pill-sky">📝</span>
+              <span class="chip pill-leaf">🟢 Easy</span>
+            </div>
+            <span class="font-mono" style="font-size: 12px;">+45 XP</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="font-display" style="font-size: 14px;">🛏️ Arrumar quarto</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+            <div style="display: flex; gap: 4px;">
+              <span class="chip pill-sky">📝</span>
+              <span class="chip pill-honey">🟡 Med</span>
+            </div>
+            <span class="font-mono" style="font-size: 12px;">+60 XP</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="font-display" style="font-size: 14px;">🪴 Regar plantas</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+            <div style="display: flex; gap: 4px;">
+              <span class="chip pill-sky">📝</span>
+              <span class="chip pill-leaf">🟢 Easy</span>
+            </div>
+            <span class="font-mono" style="font-size: 12px;">+20 XP</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="eyebrow" style="margin-top: 16px;">👀 Aguardando aprovação · 2</div>
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px; opacity: 0.85;">
+        <div class="card">
+          <div class="font-display" style="font-size: 14px;">🗑️ Tirar lixo</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+            <span class="chip pill-berry">👀 Review · há 2h</span>
+            <span class="font-mono" style="font-size: 12px;">+30</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="font-display" style="font-size: 14px;">🧦 Organizar armário</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+            <span class="chip pill-berry">👀 Review · há 4h</span>
+            <span class="font-mono" style="font-size: 12px;">+70</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="height: 80px;"></div>
+    </section>
+
+    <!-- ========== LOJA ========== -->
+    <section class="screen-m" id="s-shop">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0 12px;">
+        <div class="font-display" style="font-size: 22px;">Loja 🎁</div>
+        <div style="display: flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #FFE7DC, #FFD3C2); padding: 6px 12px; border-radius: 14px;">
+          <span style="font-size: 11px; color: #8B2E14; font-weight: 600;">SALDO</span>
+          <span class="font-display" style="font-size: 16px; color: #8B2E14;">1.240</span>
+        </div>
+      </div>
+
+      <!-- Categories -->
+      <div style="display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 8px; scrollbar-width: none;">
+        <span class="chip pill-ink" style="flex-shrink: 0;">Tudo</span>
+        <span class="chip" style="flex-shrink: 0; background: var(--paper); border: 1px solid var(--line);">🍕 Comida</span>
+        <span class="chip" style="flex-shrink: 0; background: var(--paper); border: 1px solid var(--line);">🎮 Diversão</span>
+        <span class="chip" style="flex-shrink: 0; background: var(--paper); border: 1px solid var(--line);">💰 Mesada</span>
+        <span class="chip" style="flex-shrink: 0; background: var(--paper); border: 1px solid var(--line);">🌃 Privilégios</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;">
+        <div class="card" style="position: relative; overflow: hidden;" onclick="openModal('redeem')">
+          <div style="position: absolute; top: -20px; right: -20px; width: 70px; height: 70px; border-radius: 50%; background: var(--sunset); opacity: 0.18;"></div>
+          <div style="font-size: 36px; position: relative;">🍕</div>
+          <div class="font-display" style="font-size: 14px; margin-top: 8px;">Pizza sexta</div>
+          <div class="font-display" style="font-size: 20px; margin-top: 6px;">500 <span class="font-mono" style="font-size: 10px; color: var(--ink-2);">XP</span></div>
+        </div>
+
+        <div class="card" style="position: relative; overflow: hidden;">
+          <div style="position: absolute; top: -20px; right: -20px; width: 70px; height: 70px; border-radius: 50%; background: var(--berry); opacity: 0.18;"></div>
+          <div style="font-size: 36px; position: relative;">🎮</div>
+          <div class="font-display" style="font-size: 14px; margin-top: 8px;">30min vídeo-game</div>
+          <div class="font-display" style="font-size: 20px; margin-top: 6px;">100 <span class="font-mono" style="font-size: 10px; color: var(--ink-2);">XP</span></div>
+        </div>
+
+        <div class="card" style="position: relative; overflow: hidden;">
+          <div style="position: absolute; top: -20px; right: -20px; width: 70px; height: 70px; border-radius: 50%; background: var(--honey); opacity: 0.18;"></div>
+          <div style="font-size: 36px; position: relative;">🍦</div>
+          <div class="font-display" style="font-size: 14px; margin-top: 8px;">Sorvete grande</div>
+          <div class="font-display" style="font-size: 20px; margin-top: 6px;">150 <span class="font-mono" style="font-size: 10px; color: var(--ink-2);">XP</span></div>
+        </div>
+
+        <div class="card" style="position: relative; overflow: hidden;">
+          <div style="position: absolute; top: -20px; right: -20px; width: 70px; height: 70px; border-radius: 50%; background: var(--plum); opacity: 0.18;"></div>
+          <div style="font-size: 36px; position: relative;">🎬</div>
+          <div class="font-display" style="font-size: 14px; margin-top: 8px;">Cinema</div>
+          <div class="font-display" style="font-size: 20px; margin-top: 6px;">800 <span class="font-mono" style="font-size: 10px; color: var(--ink-2);">XP</span></div>
+        </div>
+
+        <div class="card" style="position: relative; overflow: hidden; opacity: 0.5;">
+          <div style="font-size: 36px;">🛍️</div>
+          <div class="font-display" style="font-size: 14px; margin-top: 8px;">R$ 20 mesada</div>
+          <div class="font-display" style="font-size: 20px; margin-top: 6px;">1.500 <span class="font-mono" style="font-size: 10px; color: var(--ink-2);">XP</span></div>
+          <div style="font-size: 9px; color: var(--berry); font-weight: 700; margin-top: 4px;">Faltam 260</div>
+        </div>
+
+        <div class="card" style="position: relative; overflow: hidden;">
+          <div style="position: absolute; top: -20px; right: -20px; width: 70px; height: 70px; border-radius: 50%; background: var(--sky); opacity: 0.18;"></div>
+          <div style="font-size: 36px; position: relative;">🌃</div>
+          <div class="font-display" style="font-size: 14px; margin-top: 8px;">Dormir +1h</div>
+          <div class="font-display" style="font-size: 20px; margin-top: 6px;">200 <span class="font-mono" style="font-size: 10px; color: var(--ink-2);">XP</span></div>
+        </div>
+      </div>
+
+      <div style="height: 80px;"></div>
+    </section>
+
+    <!-- ========== RANK ========== -->
+    <section class="screen-m" id="s-rank">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0 12px;">
+        <div class="font-display" style="font-size: 22px;">🏆 Ranking</div>
+        <span class="chip pill-sunset">Esta semana</span>
+      </div>
+
+      <!-- Podium -->
+      <div style="display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 6px; align-items: end; margin-top: 16px;">
+        <div class="card" style="text-align: center; padding: 12px 8px; margin-top: 24px;">
+          <div class="font-display" style="font-size: 32px; color: var(--ink-2);">2</div>
+          <div class="avatar" style="width: 36px; height: 36px; font-size: 13px; margin: 0 auto; background: linear-gradient(135deg, #FFB627, #FF8C42);">P</div>
+          <div class="font-display" style="font-size: 13px; margin-top: 6px;">Pedro</div>
+          <div class="font-mono" style="font-size: 10px; color: var(--ink-2);">980 XP</div>
+        </div>
+        <div class="card" style="text-align: center; padding: 14px 8px; background: linear-gradient(180deg, #FFEFD8, #FFFDF8); border-color: var(--sunset);">
+          <div style="font-size: 24px;">👑</div>
+          <div class="font-display" style="font-size: 40px; line-height: 1; background: linear-gradient(120deg, var(--sunset), var(--berry)); -webkit-background-clip: text; background-clip: text; color: transparent;">1</div>
+          <div class="avatar" style="width: 44px; height: 44px; font-size: 16px; margin: 0 auto; background: linear-gradient(135deg, #FF6B47, #E94560);">M</div>
+          <div class="font-display" style="font-size: 15px; margin-top: 6px;">Manu</div>
+          <div class="font-mono" style="font-size: 11px; color: var(--ink-2);">1.240 XP</div>
+          <span class="chip pill-sunset" style="margin-top: 6px;">🔥 14d</span>
+        </div>
+        <div class="card" style="text-align: center; padding: 12px 8px; margin-top: 40px;">
+          <div class="font-display" style="font-size: 32px; color: var(--ink-2);">3</div>
+          <div class="avatar" style="width: 36px; height: 36px; font-size: 13px; margin: 0 auto; background: linear-gradient(135deg, #7FB069, #4F86C6);">B</div>
+          <div class="font-display" style="font-size: 13px; margin-top: 6px;">Bia</div>
+          <div class="font-mono" style="font-size: 10px; color: var(--ink-2);">820 XP</div>
+        </div>
+      </div>
+
+      <!-- You highlight -->
+      <div class="card" style="margin-top: 18px; background: linear-gradient(135deg, #FFE7DC, transparent); border-color: var(--sunset);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="font-display" style="font-size: 28px; color: var(--sunset);">#1</div>
+          <div style="flex: 1;">
+            <div style="font-weight: 700; font-size: 14px;">Você está em 1º lugar 👑</div>
+            <div class="font-mono" style="font-size: 11px; color: var(--ink-2);">+260 XP vs Pedro · +420 XP vs Bia</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Full list -->
+      <div class="eyebrow" style="margin-top: 16px;">Lista completa</div>
+      <div class="card" style="margin-top: 8px; padding: 0;">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: linear-gradient(90deg, rgba(255,107,71,0.08), transparent);">
+          <div class="font-display" style="font-size: 18px; width: 22px; text-align: center; color: var(--sunset);">1</div>
+          <span class="avatar" style="width: 28px; height: 28px; font-size: 11px; background: linear-gradient(135deg, #FF6B47, #E94560);">M</span>
+          <div style="flex: 1; font-size: 13px; font-weight: 600;">Manu <span class="chip pill-sunset" style="margin-left: 4px;">você</span></div>
+          <div class="font-mono" style="font-size: 12px; font-weight: 600;">1.240</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line);">
+          <div class="font-display" style="font-size: 18px; width: 22px; text-align: center; color: var(--ink-2);">2</div>
+          <span class="avatar" style="width: 28px; height: 28px; font-size: 11px; background: linear-gradient(135deg, #FFB627, #FF8C42);">P</span>
+          <div style="flex: 1; font-size: 13px;">Pedro</div>
+          <div class="font-mono" style="font-size: 12px;">980</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line);">
+          <div class="font-display" style="font-size: 18px; width: 22px; text-align: center; color: var(--ink-2);">3</div>
+          <span class="avatar" style="width: 28px; height: 28px; font-size: 11px; background: linear-gradient(135deg, #7FB069, #4F86C6);">B</span>
+          <div style="flex: 1; font-size: 13px;">Bia</div>
+          <div class="font-mono" style="font-size: 12px;">820</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line);">
+          <div class="font-display" style="font-size: 18px; width: 22px; text-align: center; color: var(--ink-2);">4</div>
+          <span class="avatar" style="width: 28px; height: 28px; font-size: 11px; background: linear-gradient(135deg, #6B3F73, #4A2A52);">M</span>
+          <div style="flex: 1; font-size: 13px;">Mãe (Maria)</div>
+          <div class="font-mono" style="font-size: 12px;">640</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line);">
+          <div class="font-display" style="font-size: 18px; width: 22px; text-align: center; color: var(--ink-2);">5</div>
+          <span class="avatar" style="width: 28px; height: 28px; font-size: 11px; background: linear-gradient(135deg, #E94560, #B91A38);">J</span>
+          <div style="flex: 1; font-size: 13px;">Pai (João)</div>
+          <div class="font-mono" style="font-size: 12px;">420</div>
+        </div>
+      </div>
+
+      <!-- Rules -->
+      <div class="card" style="margin-top: 12px;">
+        <div class="eyebrow">📋 Regras da semana</div>
+        <div style="font-size: 12px; margin-top: 8px; line-height: 1.6;">
+          • Reseta domingo 23:59<br/>
+          • Top 3 ganha badge<br/>
+          • 1º lugar: +100 XP bônus<br/>
+          • Último tira o lixo 🗑️
+        </div>
+      </div>
+
+      <div style="height: 80px;"></div>
+    </section>
+
+    <!-- ========== EU (Profile) ========== -->
+    <section class="screen-m" id="s-me">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0 16px;">
+        <div class="font-display" style="font-size: 22px;">Eu</div>
+        <button onclick="openModal('settings')" style="background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 6px 12px; font-size: 14px;">⚙️</button>
+      </div>
+
+      <!-- Profile hero -->
+      <div class="card-hero" style="text-align: center; padding: 22px 16px;">
+        <span class="avatar" style="width: 72px; height: 72px; font-size: 26px; background: linear-gradient(135deg, #FF6B47, #E94560); border-radius: 22px; margin: 0 auto; display: inline-flex;">M</span>
+        <div class="font-display" style="font-size: 24px; margin-top: 10px;">Manu Silva</div>
+        <div class="font-mono" style="font-size: 12px; color: var(--ink-2);">child · Membro desde jan 2026</div>
+        <div style="display: inline-flex; gap: 4px; margin-top: 8px;">
+          <span class="chip pill-honey">L7</span>
+          <span class="chip pill-sunset">🔥 14d</span>
+          <span class="chip pill-leaf">👑 1º</span>
+        </div>
+      </div>
+
+      <!-- Stats grid -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 14px;">
+        <div class="card" style="text-align: center;">
+          <div class="font-display" style="font-size: 22px;">2.140</div>
+          <div style="font-size: 9px; color: var(--ink-2); margin-top: 2px;">XP total</div>
+        </div>
+        <div class="card" style="text-align: center;">
+          <div class="font-display" style="font-size: 22px;">47</div>
+          <div style="font-size: 9px; color: var(--ink-2); margin-top: 2px;">tasks feitas</div>
+        </div>
+        <div class="card" style="text-align: center;">
+          <div class="font-display" style="font-size: 22px;">8</div>
+          <div style="font-size: 9px; color: var(--ink-2); margin-top: 2px;">badges</div>
+        </div>
+      </div>
+
+      <!-- Badges -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px;">
+        <div class="eyebrow">Badges desbloqueadas</div>
+        <button style="background: none; border: none; color: var(--sunset); font-weight: 600; font-size: 12px;">Ver todas →</button>
+      </div>
+      <div style="display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; scrollbar-width: none;">
+        <div style="text-align: center; flex-shrink: 0;">
+          <div style="width: 56px; height: 56px; border-radius: 18px; background: linear-gradient(135deg, #FFB627, #E94560); display: flex; align-items: center; justify-content: center; font-size: 26px; box-shadow: 0 6px 16px -4px rgba(233,69,96,0.4);">🏆</div>
+          <div style="font-size: 9px; margin-top: 4px; font-weight: 600;">Streak<br/>Warrior</div>
+        </div>
+        <div style="text-align: center; flex-shrink: 0;">
+          <div style="width: 56px; height: 56px; border-radius: 18px; background: linear-gradient(135deg, #7FB069, #5C8C44); display: flex; align-items: center; justify-content: center; font-size: 26px;">💎</div>
+          <div style="font-size: 9px; margin-top: 4px; font-weight: 600;">1000 XP</div>
+        </div>
+        <div style="text-align: center; flex-shrink: 0;">
+          <div style="width: 56px; height: 56px; border-radius: 18px; background: linear-gradient(135deg, #FF6B47, #E94560); display: flex; align-items: center; justify-content: center; font-size: 26px;">🚀</div>
+          <div style="font-size: 9px; margin-top: 4px; font-weight: 600;">First PR</div>
+        </div>
+        <div style="text-align: center; flex-shrink: 0;">
+          <div style="width: 56px; height: 56px; border-radius: 18px; background: linear-gradient(135deg, #4F86C6, #2E5C9E); display: flex; align-items: center; justify-content: center; font-size: 26px;">🤝</div>
+          <div style="font-size: 9px; margin-top: 4px; font-weight: 600;">Helper</div>
+        </div>
+        <div style="text-align: center; flex-shrink: 0;">
+          <div style="width: 56px; height: 56px; border-radius: 18px; background: linear-gradient(135deg, #FFB627, #FF8C42); display: flex; align-items: center; justify-content: center; font-size: 26px;">⭐</div>
+          <div style="font-size: 9px; margin-top: 4px; font-weight: 600;">L5+</div>
+        </div>
+        <div style="text-align: center; flex-shrink: 0;">
+          <div style="width: 56px; height: 56px; border-radius: 18px; background: var(--bg-2); border: 2px dashed var(--line); display: flex; align-items: center; justify-content: center; font-size: 22px;">🔒</div>
+          <div style="font-size: 9px; margin-top: 4px; color: var(--ink-2);">14 lock</div>
+        </div>
+      </div>
+
+      <!-- Family -->
+      <div class="eyebrow" style="margin-top: 16px;">Sua família</div>
+      <div class="card" style="margin-top: 8px; display: flex; align-items: center; gap: 10px;">
+        <div style="display: flex; gap: -10px;">
+          <span class="avatar" style="width: 36px; height: 36px; font-size: 13px; background: linear-gradient(135deg, #6B3F73, #4A2A52); margin-right: -8px;">M</span>
+          <span class="avatar" style="width: 36px; height: 36px; font-size: 13px; background: linear-gradient(135deg, #E94560, #B91A38); margin-right: -8px;">J</span>
+          <span class="avatar" style="width: 36px; height: 36px; font-size: 13px; background: linear-gradient(135deg, #FFB627, #FF8C42); margin-right: -8px;">P</span>
+          <span class="avatar" style="width: 36px; height: 36px; font-size: 13px; background: linear-gradient(135deg, #7FB069, #4F86C6);">B</span>
+        </div>
+        <div style="flex: 1;">
+          <div class="font-display" style="font-size: 15px;">Os Silva</div>
+          <div style="font-size: 11px; color: var(--ink-2);">5 membros</div>
+        </div>
+        <span style="color: var(--ink-2);">→</span>
+      </div>
+
+      <!-- Settings shortcuts -->
+      <div class="eyebrow" style="margin-top: 16px;">Atalhos</div>
+      <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+        <button class="card" style="display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer; border: 1px solid var(--line);">
+          <div style="font-size: 22px;">📈</div>
+          <div style="flex: 1;">
+            <div style="font-weight: 600; font-size: 13px;">XP History</div>
+            <div style="font-size: 11px; color: var(--ink-2);">Veja todo seu XP ganho e gasto</div>
+          </div>
+          <span style="color: var(--ink-2);">→</span>
+        </button>
+        <button class="card" style="display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer; border: 1px solid var(--line);">
+          <div style="font-size: 22px;">🏆</div>
+          <div style="flex: 1;">
+            <div style="font-weight: 600; font-size: 13px;">Badges (22)</div>
+            <div style="font-size: 11px; color: var(--ink-2);">8 desbloqueadas · 14 locked</div>
+          </div>
+          <span style="color: var(--ink-2);">→</span>
+        </button>
+        <button class="card" style="display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer; border: 1px solid var(--line);" onclick="openModal('settings')">
+          <div style="font-size: 22px;">⚙️</div>
+          <div style="flex: 1;">
+            <div style="font-weight: 600; font-size: 13px;">Configurações</div>
+            <div style="font-size: 11px; color: var(--ink-2);">Perfil, aparência, sons</div>
+          </div>
+          <span style="color: var(--ink-2);">→</span>
+        </button>
+        <button class="card" style="display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer; border: 1px solid var(--berry); color: var(--berry);">
+          <div style="font-size: 22px;">🚪</div>
+          <div style="flex: 1;">
+            <div style="font-weight: 600; font-size: 13px;">Sair</div>
+          </div>
+        </button>
+      </div>
+
+      <div style="height: 80px;"></div>
+    </section>
+
+  </div>
+
+  <!-- FAB -->
+  <button class="fab" onclick="openModal('create')">＋</button>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <button class="active" onclick="showScreen('home')">
+      <span class="ico">🏠</span>
+      <span class="lbl">Home</span>
+    </button>
+    <button onclick="showScreen('tasks')">
+      <span class="ico">📋</span>
+      <span class="lbl">Tasks</span>
+    </button>
+    <button onclick="showScreen('shop')">
+      <span class="ico">🎁</span>
+      <span class="lbl">Loja</span>
+    </button>
+    <button onclick="showScreen('rank')">
+      <span class="ico">🏆</span>
+      <span class="lbl">Rank</span>
+    </button>
+    <button onclick="showScreen('me')">
+      <span class="ico">👤</span>
+      <span class="lbl">Eu</span>
+    </button>
+  </nav>
+
+  <!-- ========== MODALS ========== -->
+
+  <!-- Modal: Task Detail (bottom sheet) -->
+  <div class="modal-backdrop" id="m-task-detail" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="handle"></div>
+      <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+        <span class="chip pill-honey">🔨 In Progress</span>
+        <span class="chip pill-berry">🔴 Hard</span>
+        <span class="chip pill-sky">Estudo</span>
+      </div>
+      <div class="font-display" style="font-size: 22px; margin-top: 10px;">📚 Estudar matemática 30min</div>
+      <p style="font-size: 13px; color: var(--ink-2); line-height: 1.5; margin: 8px 0 0;">
+        Resolver os exercícios das páginas 45-48. Foco em equações de 2º grau.
+        Tira foto do caderno como prova.
+      </p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 14px;">
+        <div class="card" style="text-align: center; padding: 8px;">
+          <div style="font-size: 9px; color: var(--ink-2);">XP base</div>
+          <div class="font-display" style="font-size: 18px;">80</div>
+        </div>
+        <div class="card" style="text-align: center; padding: 8px;">
+          <div style="font-size: 9px; color: var(--ink-2);">×Mult</div>
+          <div class="font-display" style="font-size: 18px;">2.0</div>
+        </div>
+        <div class="card" style="text-align: center; padding: 8px; background: linear-gradient(135deg, #DEEFD0, #C2DFAB);">
+          <div style="font-size: 9px; color: #2E5A1B;">Total</div>
+          <div class="font-display" style="font-size: 18px; color: #2E5A1B;">+160</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 14px;">
+        <div class="eyebrow">📝 Submissão</div>
+        <textarea placeholder="Conta como foi…" style="margin-top: 6px; height: 60px;"></textarea>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 12px;">
+        <button class="btn-ghost" style="flex: 1;">📎 Foto</button>
+        <button class="btn-primary" style="flex: 2;" onclick="closeModal(); showToast('✅ Submetido!', 'Aguardando aprovação da Maria');">Submeter ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Create Task (parent FAB) -->
+  <div class="modal-backdrop" id="m-create" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="handle"></div>
+      <div class="font-display" style="font-size: 22px;">Nova task</div>
+      <div style="font-size: 11px; color: var(--ink-2); margin-top: 2px;">parent only</div>
+
+      <div style="margin-top: 16px;">
+        <div class="eyebrow">Título</div>
+        <input value="Lavar o carro" style="margin-top: 6px;"/>
+      </div>
+
+      <div style="margin-top: 12px;">
+        <div class="eyebrow">Descrição</div>
+        <textarea placeholder="Detalhes…" style="margin-top: 6px; height: 50px;">Mangueira do quintal, sabão na garagem.</textarea>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;">
+        <div>
+          <div class="eyebrow">Dificuldade</div>
+          <div style="display: flex; gap: 4px; margin-top: 6px;">
+            <button class="chip pill-leaf" style="padding: 8px 10px;">🟢</button>
+            <button class="chip pill-honey" style="padding: 8px 10px;">🟡</button>
+            <button class="chip" style="padding: 8px 10px; background: var(--paper); border: 1px solid var(--line);">🔴</button>
+          </div>
+        </div>
+        <div>
+          <div class="eyebrow">XP base</div>
+          <input value="80" type="number" style="margin-top: 6px;"/>
+        </div>
+      </div>
+
+      <div style="margin-top: 12px;">
+        <div class="eyebrow">Atribuir a</div>
+        <div style="display: flex; gap: 6px; margin-top: 6px;">
+          <button style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 14px; background: linear-gradient(135deg, #FFE7DC, #FFD3C2); border: none; font-size: 12px; font-weight: 600;">
+            <span class="avatar" style="width: 22px; height: 22px; font-size: 9px; background: linear-gradient(135deg, #FF6B47, #E94560);">M</span>
+            Manu
+          </button>
+          <button style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 14px; background: var(--paper); border: 1px solid var(--line); font-size: 12px;">
+            <span class="avatar" style="width: 22px; height: 22px; font-size: 9px; background: linear-gradient(135deg, #FFB627, #FF8C42);">P</span>
+            Pedro
+          </button>
+          <button style="display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 14px; background: var(--paper); border: 1px solid var(--line); font-size: 12px;">
+            <span class="avatar" style="width: 22px; height: 22px; font-size: 9px; background: linear-gradient(135deg, #7FB069, #4F86C6);">B</span>
+            Bia
+          </button>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 16px;">
+        <button class="btn-ghost" style="flex: 1;" onclick="closeModal()">Cancelar</button>
+        <button class="btn-primary" style="flex: 2;" onclick="closeModal(); showToast('✅ Task criada!', 'Atribuída para Manu');">Criar quest →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Redeem (center) -->
+  <div class="modal-backdrop center" id="m-redeem" onclick="closeModal(event)">
+    <div class="modal-sheet center" onclick="event.stopPropagation()" style="text-align: center; padding: 28px 22px;">
+      <div style="font-size: 56px;">🍕</div>
+      <div class="font-display" style="font-size: 22px; margin-top: 8px;">Resgatar Pizza sexta?</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 18px;">
+        <div class="card" style="padding: 10px;">
+          <div style="font-size: 9px; color: var(--ink-2);">Custo</div>
+          <div class="font-display" style="font-size: 20px; color: var(--berry);">-500 XP</div>
+        </div>
+        <div class="card" style="padding: 10px;">
+          <div style="font-size: 9px; color: var(--ink-2);">Saldo após</div>
+          <div class="font-display" style="font-size: 20px;">740</div>
+        </div>
+      </div>
+      <p style="font-size: 12px; color: var(--ink-2); margin-top: 14px;">
+        Mãe receberá uma notificação pra entregar a pizza.
+      </p>
+      <div style="display: flex; gap: 8px; margin-top: 18px;">
+        <button class="btn-ghost" style="flex: 1;" onclick="closeModal()">Cancelar</button>
+        <button class="btn-primary" style="flex: 2;" onclick="closeModal(); showToast('🎉 Resgatado!', 'Aguardando entrega da pizza');">Confirmar ✨</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Notifications -->
+  <div class="modal-backdrop" id="m-notif" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height: 80%;">
+      <div class="handle"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="font-display" style="font-size: 20px;">🔔 Notificações</div>
+        <button style="background: none; border: none; font-size: 11px; color: var(--ink-2); text-decoration: underline;">marcar todas</button>
+      </div>
+
+      <div class="eyebrow" style="margin-top: 14px;">Hoje</div>
+      <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+        <div class="card" style="display: flex; gap: 10px; padding: 10px; background: linear-gradient(90deg, rgba(255,107,71,0.06), transparent);">
+          <div style="font-size: 22px;">✅</div>
+          <div style="flex: 1;">
+            <div style="font-weight: 700; font-size: 12px;">Sua task foi aprovada!</div>
+            <div style="font-size: 11px; color: var(--ink-2);">"Tirar lixo" · +30 XP · há 5 min</div>
+          </div>
+          <span class="chip pill-sunset">new</span>
+        </div>
+        <div class="card" style="display: flex; gap: 10px; padding: 10px;">
+          <div style="font-size: 22px;">🔥</div>
+          <div style="flex: 1;">
+            <div style="font-weight: 700; font-size: 12px;">Seu streak chegou a 14d!</div>
+            <div style="font-size: 11px; color: var(--ink-2);">Continue assim · bônus em 6d</div>
+          </div>
+          <span class="chip pill-honey">new</span>
+        </div>
+        <div class="card" style="display: flex; gap: 10px; padding: 10px;">
+          <div style="font-size: 22px;">🎁</div>
+          <div style="flex: 1;">
+            <div style="font-weight: 700; font-size: 12px;">Mãe adicionou recompensa</div>
+            <div style="font-size: 11px; color: var(--ink-2);">"Cinema" por 800 XP · há 2h</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="eyebrow" style="margin-top: 14px;">Ontem</div>
+      <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+        <div class="card" style="display: flex; gap: 10px; padding: 10px;">
+          <div style="font-size: 22px;">⭐</div>
+          <div style="flex: 1;">
+            <div style="font-weight: 700; font-size: 12px;">Level up! L6 → L7</div>
+            <div style="font-size: 11px; color: var(--ink-2);">Nova badge: Streak Warrior</div>
+          </div>
+        </div>
+        <div class="card" style="display: flex; gap: 10px; padding: 10px;">
+          <div style="font-size: 22px;">📋</div>
+          <div style="flex: 1;">
+            <div style="font-weight: 700; font-size: 12px;">Pai atribuiu nova task</div>
+            <div style="font-size: 11px; color: var(--ink-2);">"Arrumar quarto" · +60 XP</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Settings -->
+  <div class="modal-backdrop" id="m-settings" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="handle"></div>
+      <div class="font-display" style="font-size: 20px;">⚙️ Configurações</div>
+
+      <div class="eyebrow" style="margin-top: 14px;">Aparência</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 6px;">
+        <button class="card" style="padding: 8px; text-align: left; border: 2px solid var(--sunset);">
+          <div style="height: 32px; border-radius: 8px; background: linear-gradient(135deg, #FFF8F0, #FFEFD8);"></div>
+          <div style="font-size: 10px; font-weight: 700; margin-top: 4px;">Cozy</div>
+        </button>
+        <button class="card" style="padding: 8px; text-align: left;">
+          <div style="height: 32px; border-radius: 8px; background: linear-gradient(135deg, #14110F, #1F1A16);"></div>
+          <div style="font-size: 10px; font-weight: 700; margin-top: 4px;">Dark</div>
+        </button>
+        <button class="card" style="padding: 8px; text-align: left;">
+          <div style="height: 32px; border-radius: 8px; background: linear-gradient(135deg, #FFE3F1, #FFD4FF);"></div>
+          <div style="font-size: 10px; font-weight: 700; margin-top: 4px;">Candy</div>
+        </button>
+      </div>
+
+      <div class="eyebrow" style="margin-top: 14px;">Sons & efeitos</div>
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0;">
+          <div style="font-size: 13px;">Som ao aprovar 🪙</div>
+          <div style="width: 40px; height: 24px; background: var(--leaf); border-radius: 99px; position: relative;">
+            <div style="position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; background: white; border-radius: 50%;"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0;">
+          <div style="font-size: 13px;">Confete em level up 🎉</div>
+          <div style="width: 40px; height: 24px; background: var(--leaf); border-radius: 99px; position: relative;">
+            <div style="position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; background: white; border-radius: 50%;"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0;">
+          <div style="font-size: 13px;">Vibração 📳</div>
+          <div style="width: 40px; height: 24px; background: var(--line); border-radius: 99px; position: relative;">
+            <div style="position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-ghost" style="width: 100%; margin-top: 16px;" onclick="closeModal()">Fechar</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function showScreen(id) {
+    document.querySelectorAll('.screen-m').forEach(s => s.classList.remove('active'));
+    document.getElementById('s-' + id).classList.add('active');
+    document.querySelectorAll('.bottom-nav button').forEach((b, i) => {
+      const ids = ['home','tasks','shop','rank','me'];
+      b.classList.toggle('active', ids[i] === id);
+    });
+    document.querySelector('.screen-m.active').scrollTo({top: 0});
+  }
+
+  function openModal(id) {
+    document.getElementById('m-' + id).classList.add('active');
+  }
+  function closeModal(e) {
+    if (e && e.target !== e.currentTarget) return;
+    document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('active'));
+  }
+
+  function showToast(title, sub) {
+    document.getElementById('toast-title').textContent = title;
+    document.getElementById('toast-sub').textContent = sub;
+    const t = document.getElementById('toast');
+    t.classList.add('active');
+    setTimeout(() => t.classList.remove('active'), 3500);
+  }
+</script>
+</body>
+</html>

@@ -1,8 +1,16 @@
 # ChoreQuest · Design Prototype
 
-> 🌐 **Live:** https://gabrielbsx.github.io/chorequest-design/
+> 🌐 **Web preview:** https://gabrielbsx.github.io/chorequest-design/
+> 📱 **Mobile preview:** https://gabrielbsx.github.io/chorequest-design/mobile.html
 
 Protótipo navegável de **ChoreQuest** — plataforma gamificada de tarefas domésticas para famílias.
+
+## 📁 Dois protótipos
+
+| Arquivo | Pra que serve | Como abrir |
+|---|---|---|
+| `index.html` | Visão completa pra desktop · 33 telas + design system + spec | Desktop browser |
+| `mobile.html` | App mobile fullscreen interativo · 5 abas + modais + toasts | **Abra no celular** ou simulador (iPhone frame em desktop) |
 
 ## 📦 O que tem aqui
 
@@ -16,18 +24,23 @@ Protótipo navegável de **ChoreQuest** — plataforma gamificada de tarefas dom
 ## 🗂️ 33 telas
 
 ### Auth (5)
+
 Login · Register família · Onboarding · Forgot password · Email verify · Invite acceptance (child)
 
 ### Core (8)
+
 Dashboard child · Dashboard parent · Tasks list · Task Detail · Create Task modal · Approval Queue · Rewards Shop · Ranking
 
 ### Gamificação (4)
+
 Level Up celebration · Badge Gallery · XP History · Streak em risco
 
 ### Família + Profile (4)
+
 Família · Família vazia · Profile público · Settings
 
 ### Sistema (12)
+
 Intro · Design System · Notifications drawer · Estados (empty/loading/error/success) · Mobile mockups (6 phones + bottom sheets) · User Flows · Weekly Report · Reward pós-resgate · Confirmação destrutiva · 404 · Maintenance
 
 ## 🛠️ Stack futuro
