@@ -7,10 +7,10 @@ Protótipo navegável de **ChoreQuest** — plataforma gamificada de tarefas dom
 
 ## 📁 Dois protótipos
 
-| Arquivo | Pra que serve | Como abrir |
-|---|---|---|
-| `index.html` | Visão completa pra desktop · 33 telas + design system + spec | Desktop browser |
-| `mobile.html` | App mobile fullscreen interativo · 5 abas + modais + toasts | **Abra no celular** ou simulador (iPhone frame em desktop) |
+| Arquivo       | Pra que serve                                                | Como abrir                                                 |
+| ------------- | ------------------------------------------------------------ | ---------------------------------------------------------- |
+| `index.html`  | Visão completa pra desktop · 33 telas + design system + spec | Desktop browser                                            |
+| `mobile.html` | App mobile fullscreen interativo · 5 abas + modais + toasts  | **Abra no celular** ou simulador (iPhone frame em desktop) |
 
 ## 📦 O que tem aqui
 
