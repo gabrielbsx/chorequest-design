@@ -1,6 +1,8 @@
 # ChoreQuest · Design Spec (Handoff para o time)
 
-> Protótipo navegável: abra `design/index.html` no browser.
+> 🌐 **Live:** https://gabrielbsx.github.io/chorequest-design/
+> 📦 **Repo:** https://github.com/gabrielbsx/chorequest-design
+>
 > Esse documento complementa o protótipo com detalhes de implementação, tokens e critérios de aceitação por tela.
 
 ---
